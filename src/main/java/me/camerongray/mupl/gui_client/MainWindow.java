@@ -43,6 +43,7 @@ public class MainWindow extends javax.swing.JFrame {
             this.menuEditFolder.setVisible(false);
             this.sepFolder.setVisible(false);
         }
+        menuNewAccount.setEnabled(false);
         
         pgbStatus.setIndeterminate(true);
         lblStatus.setText("Getting folders...");
@@ -245,11 +246,11 @@ public class MainWindow extends javax.swing.JFrame {
             String folderName = lstFolders.getSelectedValue();
             if (folderName == null) {
                 this.selectedFolder = null;
+                menuNewAccount.setEnabled(false);
             } else {
                 this.selectedFolder = this.folderObjects.get(folderName);
+                menuNewAccount.setEnabled(this.selectedFolder.isWrite());
             }
-            
-            menuNewAccount.setEnabled(this.selectedFolder.isWrite());
         }
     }//GEN-LAST:event_lstFoldersValueChanged
 
