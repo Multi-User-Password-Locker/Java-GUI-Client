@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             Locker l = new Locker("locahost", 5000, "camerongray", "password");
-            l.check_auth();
+            System.out.println(l.check_auth());
         } catch (LockerRuntimeException e) {
             System.out.println(e.getMessage());
         }

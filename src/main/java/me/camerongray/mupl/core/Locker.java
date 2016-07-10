@@ -12,6 +12,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 import org.json.JSONException;
+import org.apache.http.client.utils.URIBuilder;
 
 /**
  * Created by camerong on 09/07/16.
@@ -37,14 +38,24 @@ public class Locker {
         this.username = username;
         this.password = password;
     }
+    
+    private String get_url(String path) {
+        URIBuilder u = new URIBuilder();
+        u.setScheme("http");
+        u.setHost(this.server);
+        u.setPort(this.port);
+        u.setPath("/"+path+"/");
+        return u.toString();
+    }
 
     public boolean check_auth() throws LockerRuntimeException {
         try {
-            JSONObject response = Unirest.get("http://127.0.0.1:5000/check_auth/").basicAuth(this.username,
+            JSONObject response = Unirest.get(this.get_url("check_auth")).basicAuth(this.username,
                     this.auth_key).asJson().getBody().getObject();
             return response.isNull("error");
-        } catch (UnirestException e) {
-            throw new LockerRuntimeException(e.getMessage());
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Could not connect to server:\n\n" +
+                    e.getMessage());
         }
     }
 }
