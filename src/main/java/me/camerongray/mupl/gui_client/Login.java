@@ -6,6 +6,7 @@
 package me.camerongray.mupl.gui_client;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import me.camerongray.mupl.core.*;
 
 /**
@@ -21,6 +22,7 @@ public class Login extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.getRootPane().setDefaultButton(btnLogin);
+        panelLoggingIn.setVisible(false);
     }
 
     /**
@@ -42,6 +44,9 @@ public class Login extends javax.swing.JDialog {
         txtPassword = new javax.swing.JPasswordField();
         btnLogin = new javax.swing.JButton();
         btnExit = new javax.swing.JButton();
+        panelLoggingIn = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jProgressBar1 = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Login");
@@ -81,6 +86,25 @@ public class Login extends javax.swing.JDialog {
             }
         });
 
+        jLabel5.setText("Logging In...");
+
+        jProgressBar1.setIndeterminate(true);
+
+        javax.swing.GroupLayout panelLoggingInLayout = new javax.swing.GroupLayout(panelLoggingIn);
+        panelLoggingIn.setLayout(panelLoggingInLayout);
+        panelLoggingInLayout.setHorizontalGroup(
+            panelLoggingInLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelLoggingInLayout.createSequentialGroup()
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
+        );
+        panelLoggingInLayout.setVerticalGroup(
+            panelLoggingInLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jLabel5)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -107,6 +131,8 @@ public class Login extends javax.swing.JDialog {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(btnExit)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(panelLoggingIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(120, 120, 120)
                         .addComponent(btnLogin)))
                 .addContainerGap())
         );
@@ -127,11 +153,16 @@ public class Login extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnLogin)
-                    .addComponent(btnExit))
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnLogin)
+                            .addComponent(btnExit))
+                        .addGap(9, 9, 9))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(panelLoggingIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(17, 17, 17))))
         );
 
         pack();
@@ -162,22 +193,9 @@ public class Login extends javax.swing.JDialog {
             return;
         }
         
-        try {
-            Locker locker = new Locker(hostname, port, username, password);
-            
-            if (locker.check_auth()) {
-                javax.swing.JFrame f = new MainWindow(locker);
-                f.setVisible(true);
-                this.dispose();
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Incorrect Username/Password, Please try again!",
-                        "Login Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (LockerRuntimeException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(),
-                    "Application Error", JOptionPane.ERROR_MESSAGE);
-        }
+        panelLoggingIn.setVisible(true);
+        btnLogin.setEnabled(false);
+        new LoginTask(this, hostname, port, username, password).execute();
     }//GEN-LAST:event_btnLoginActionPerformed
 
 
@@ -188,9 +206,88 @@ public class Login extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JPanel panelLoggingIn;
     private javax.swing.JTextField txtHostname;
     private javax.swing.JPasswordField txtPassword;
     private javax.swing.JTextField txtPort;
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
+
+
+    class LoginTask extends SwingWorker<LoginTaskResult, Object> {
+        private javax.swing.JDialog dialog;
+        private String hostname;
+        private int port;
+        private String username;
+        private String password;
+
+        public LoginTask(javax.swing.JDialog dialog, String hostname, int port, String username, String password) {
+            this.dialog = dialog;
+            this.hostname = hostname;
+            this.port = port;
+            this.username = username;
+            this.password = password;
+        }
+
+        @Override
+        public LoginTaskResult doInBackground() throws Exception {
+            Locker locker = new Locker(hostname, port, username, password);
+
+            if (locker.checkAuth()) {
+                Object result = new Object();
+                return new LoginTaskResult(locker.getCurrentUser(), locker);
+            } else {
+                throw new LockerSecurityException("Incorrect Username/Password, Please try again!");
+            }
+        }
+
+        @Override
+        public void done() {
+            panelLoggingIn.setVisible(false);
+            btnLogin.setEnabled(true);
+            try {
+                LoginTaskResult result = this.get();
+                javax.swing.JFrame f = new MainWindow(result.getLocker(), result.getUser());
+                f.setVisible(true);
+                this.dialog.dispose();
+            } catch (Exception e) {
+                if (e.getCause() instanceof LockerSecurityException) {
+                    JOptionPane.showMessageDialog(dialog, e.getCause().getMessage(),
+                            "Login Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(dialog, e.getCause().getMessage(),
+                            "Application Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+    
+    private class LoginTaskResult {
+        private User user;
+        private Locker locker;
+
+        public LoginTaskResult(User user, Locker locker) {
+            this.user = user;
+            this.locker = locker;
+        }
+
+        public User getUser() {
+            return user;
+        }
+
+        public void setUser(User user) {
+            this.user = user;
+        }
+
+        public Locker getLocker() {
+            return locker;
+        }
+
+        public void setLocker(Locker locker) {
+            this.locker = locker;
+        }
+
+    }
 }
