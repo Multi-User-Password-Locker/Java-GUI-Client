@@ -187,6 +187,11 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu2.add(menuNewFolder);
 
         menuEditFolder.setText("Edit Folder");
+        menuEditFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuEditFolderActionPerformed(evt);
+            }
+        });
         jMenu2.add(menuEditFolder);
 
         menuDeleteFolder.setText("Delete Folder");
@@ -307,6 +312,10 @@ public class MainWindow extends javax.swing.JFrame {
         (new GetFoldersTask(this, this.locker)).execute();
     }//GEN-LAST:event_menuDeleteFolderActionPerformed
 
+    private void menuEditFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuEditFolderActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_menuEditFolderActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button button1;
     private javax.swing.JMenu jMenu1;
@@ -364,4 +373,6 @@ public class MainWindow extends javax.swing.JFrame {
             }
         }
     }
+    
+//    class GetFolderPermissionsTask extends SwingWorker<
 }

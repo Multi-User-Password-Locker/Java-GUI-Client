@@ -68,12 +68,31 @@ public class Locker {
     
     public User getCurrentUser() throws LockerRuntimeException {
         try {
-            String response = Unirest.get(this.getUrl("users")).basicAuth(this.username,
+            String response = Unirest.get(this.getUrl("users/self")).basicAuth(this.username,
                     this.auth_key).asJson().getBody().getObject().getJSONObject("user").toString();
             
             User user = this.objectMapper.readValue(response, User.class);
             
             return user;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    public User[] getAllUsers() throws LockerRuntimeException {
+        try {
+            JSONObject response = Unirest.get(this.getUrl("users")).basicAuth(this.username,
+                    this.auth_key).asJson().getBody().getObject();
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            User[] users = this.objectMapper.readValue(response.getJSONArray("users").toString(), User[].class);
+            
+            return users;
+        } catch (LockerRuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }
