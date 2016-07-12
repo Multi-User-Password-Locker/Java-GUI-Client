@@ -4,19 +4,40 @@
  * and open the template in the editor.
  */
 package me.camerongray.mupl.gui_client;
+import javax.swing.table.DefaultTableModel;
+import me.camerongray.mupl.core.*;
 
 /**
  *
  * @author camerong
  */
 public class EditFolder extends javax.swing.JDialog {
-
+    private Folder folder;
+    private FolderPermission[] permissions;
+    
     /**
      * Creates new form EditFolder
      */
-    public EditFolder(java.awt.Frame parent, boolean modal) {
+    public EditFolder(java.awt.Frame parent, boolean modal, Folder folder, FolderPermission[] permissions) {
         super(parent, modal);
+        this.folder = folder;
+        this.permissions = permissions;
         initComponents();
+        populateUi();
+    }
+    
+    private void populateUi() {
+        this.txtFolderName.setText(this.folder.getName());
+        DefaultTableModel model = (DefaultTableModel)tblPermissions.getModel();
+        for (FolderPermission p : this.permissions) {
+            model.addRow(new Object[]{
+                p.getUser().getId(),
+                p.getUser().getFullName(),
+                p.getUser().getUsername(),
+                p.isRead(),
+                p.isWrite()
+            });
+        }
     }
 
     /**
@@ -31,16 +52,18 @@ public class EditFolder extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         txtFolderName = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblPermissions = new javax.swing.JTable();
         btnSaveFolder = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Edit Folder");
+        setLocationByPlatform(true);
 
         jLabel1.setText("Folder Name");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblPermissions.setAutoCreateRowSorter(true);
+        tblPermissions.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -63,11 +86,16 @@ public class EditFolder extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tblPermissions);
 
         btnSaveFolder.setText("Save Folder");
 
         btnCancel.setText("Cancel");
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -106,54 +134,16 @@ public class EditFolder extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(EditFolder.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(EditFolder.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(EditFolder.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(EditFolder.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                EditFolder dialog = new EditFolder(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_btnCancelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnSaveFolder;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTable tblPermissions;
     private javax.swing.JTextField txtFolderName;
     // End of variables declaration//GEN-END:variables
 }

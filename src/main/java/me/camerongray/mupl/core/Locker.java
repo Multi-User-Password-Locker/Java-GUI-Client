@@ -15,6 +15,9 @@ import org.json.JSONException;
 import org.apache.http.client.utils.URIBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.json.JSONArray;
 
 
 /**
@@ -124,6 +127,45 @@ public class Locker {
             
         if (response.isNull("success")) {
             throw new LockerRuntimeException(response.getString("message"));
+        }
+    }
+    
+    public FolderPermission[] getFolderPermissions(Folder folder) throws LockerRuntimeException {
+        try {
+            JSONObject response = Unirest.get(this.getUrl(
+                    "folders/"+folder.getId()+"/permissions")).basicAuth(this.username,
+                    this.auth_key).asJson().getBody().getObject();
+            
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+
+            JSONArray permissions = response.getJSONArray("permissions");
+            HashMap<Integer, JSONObject> permissionMap = new HashMap<>();
+            for (int i = 0; i < permissions.length(); i++) {
+                JSONObject permission = permissions.getJSONObject(i);
+                permissionMap.put(permission.getInt("user_id"), permission);
+            }
+            
+            User[] users = this.getAllUsers();
+            ArrayList<FolderPermission> folderPermissions = new ArrayList<>();
+            for (User user : users) {
+                boolean read = false;
+                boolean write = false;
+                if (permissionMap.containsKey(user.getId())) {
+                    JSONObject permission = permissionMap.get(user.getId());
+                    read = permission.getBoolean("read");
+                    write = permission.getBoolean("write");
+                }
+                folderPermissions.add(new FolderPermission(user, folder, read, write));
+            }
+            
+            return folderPermissions.toArray(new FolderPermission[folderPermissions.size()]);
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }
     }
     

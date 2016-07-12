@@ -22,6 +22,12 @@ public class Folder {
         this.write = write;
     }
     
+    public Folder(int id, String name) {
+        this.id = id;
+        this.name = name;
+
+    }
+    
     public Folder() {}
 
     public int getId() {

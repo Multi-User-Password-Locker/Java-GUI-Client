@@ -268,6 +268,12 @@ public class MainWindow extends javax.swing.JFrame {
     private void menuNewFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNewFolderActionPerformed
         String folderName = (String)JOptionPane.showInputDialog(this, "Enter a name for this folder:",
                 "New Folder", JOptionPane.QUESTION_MESSAGE);
+        
+        // Cancel button pressed
+        if (folderName == null) {
+            return;
+        }
+        
         try {
             this.locker.addFolder(folderName);
         } catch (LockerRuntimeException e) {
@@ -313,7 +319,15 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_menuDeleteFolderActionPerformed
 
     private void menuEditFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuEditFolderActionPerformed
-        // TODO add your handling code here:
+        if (this.selectedFolder == null)  {
+            JOptionPane.showMessageDialog(this, "You must select a folder!",
+                            "Delete Folder", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        pgbStatus.setIndeterminate(true);
+        lblStatus.setText("Fetching Permissions...");
+        (new GetFolderPermissionsTask(this, this.locker, this.selectedFolder)).execute();
     }//GEN-LAST:event_menuEditFolderActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -368,11 +382,40 @@ public class MainWindow extends javax.swing.JFrame {
                 }
                 lstFolders.setModel(model);
             } catch (Exception e) {
+                e.printStackTrace();
                 JOptionPane.showMessageDialog(this.window, e.getCause().getMessage(),
                             "Application Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
     
-//    class GetFolderPermissionsTask extends SwingWorker<
+    class GetFolderPermissionsTask extends SwingWorker<FolderPermission[], Object> {
+        private Folder folder;
+        private Locker locker;
+        private MainWindow window;
+        public GetFolderPermissionsTask(MainWindow window, Locker locker, Folder folder) {
+            this.folder = folder;
+            this.locker = locker;
+            this.window = window;
+        }
+        
+        @Override
+        public FolderPermission[] doInBackground() throws Exception {
+            return this.locker.getFolderPermissions(this.folder);
+        }
+        
+        @Override
+        public void done() {
+            pgbStatus.setIndeterminate(false);
+            lblStatus.setText("Ready");
+            try {
+                FolderPermission[] permissions = this.get();
+                    new EditFolder(this.window, true, this.folder, permissions).setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this.window, e.getCause().getMessage(),
+                            "Application Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 }
