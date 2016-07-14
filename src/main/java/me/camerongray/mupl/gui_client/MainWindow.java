@@ -44,7 +44,10 @@ public class MainWindow extends javax.swing.JFrame {
             this.sepFolder.setVisible(false);
         }
         menuNewAccount.setEnabled(false);
-        
+        this.refreshFolderList();
+    }
+    
+    public void refreshFolderList() {
         pgbStatus.setIndeterminate(true);
         lblStatus.setText("Getting folders...");
         (new GetFoldersTask(this, this.locker)).execute();
@@ -99,7 +102,7 @@ public class MainWindow extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 792, Short.MAX_VALUE)
+                .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 732, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pgbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -221,15 +224,16 @@ public class MainWindow extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1))
+                .addComponent(jSplitPane1)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 683, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -327,7 +331,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         pgbStatus.setIndeterminate(true);
         lblStatus.setText("Fetching Permissions...");
-        (new GetFolderPermissionsTask(this, this.locker, this.selectedFolder)).execute();
+        (new GetFolderPermissionsTask(this , this.locker, this.selectedFolder)).execute();
     }//GEN-LAST:event_menuEditFolderActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -410,7 +414,7 @@ public class MainWindow extends javax.swing.JFrame {
             lblStatus.setText("Ready");
             try {
                 FolderPermission[] permissions = this.get();
-                    new EditFolder(this.window, true, this.folder, permissions).setVisible(true);
+                    new EditFolder(this.window, true, this.locker, this.folder, permissions).setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this.window, e.getCause().getMessage(),

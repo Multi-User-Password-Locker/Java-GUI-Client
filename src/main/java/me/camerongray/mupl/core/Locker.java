@@ -183,6 +183,53 @@ public class Locker {
         }
     }
     
+    public void setFolderPermissions(int folderId, FolderPermission[] permissions) throws LockerRuntimeException {
+        JSONArray json_permissions = new JSONArray();
+        for (FolderPermission p : permissions) {
+            JSONObject permission = new JSONObject();
+            permission.put("user_id", p.getUser().getId());
+            permission.put("read", p.isRead());
+            permission.put("write", p.isWrite());
+            json_permissions.put(permission);
+        }
+        JSONObject payload = new JSONObject();
+        payload.put("permissions", json_permissions);
+        
+        try {
+            JSONObject response = Unirest.post(this.getUrl("folders/" + folderId + "/permissions")).basicAuth(this.username,
+                        this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
+                                payload.toString()).asJson().getBody().getObject();
+            
+            if (response.isNull("success")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    public void updateFolder(Folder folder) throws LockerRuntimeException {
+        JSONObject payload = new JSONObject();
+        payload.put("name", folder.getName());
+        try {
+            JSONObject response = Unirest.post(this.getUrl("folders/" + folder.getId() + "/save")).basicAuth(this.username,
+                        this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
+                                payload.toString()).asJson().getBody().getObject();
+            
+            if (response.isNull("success")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
     public void getAccounts(int folderId) throws LockerRuntimeException {
         
     }
