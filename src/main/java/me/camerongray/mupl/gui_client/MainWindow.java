@@ -262,20 +262,9 @@ public class MainWindow extends javax.swing.JFrame {
                 menuNewAccount.setEnabled(this.selectedFolder.isWrite());
             }
             
-            // TODO - Move this into SwingWorker!
-            try {
-                Account[] accounts = this.locker.getFolderAccounts(this.selectedFolder.getId(), this.user.getPrivateKey());
-                
-                DefaultTableModel model = (DefaultTableModel)tblAccounts.getModel();
-                model.setRowCount(0); // Clear the table
-                for (Account account : accounts) {    
-                    model.addRow(new Object[]{account.getName(), account.getUsername(), account.getNotes(), ""});
-                }
-            } catch (LockerRuntimeException e) {
-                JOptionPane.showMessageDialog(this, e.getMessage(),
-                                "New Folder", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            pgbStatus.setIndeterminate(true);
+            lblStatus.setText("Getting Accounts...");
+            (new GetFolderAccountsTask(this, this.user, this.locker, this.selectedFolder)).execute();
         }
     }//GEN-LAST:event_lstFoldersValueChanged
 
@@ -435,6 +424,45 @@ public class MainWindow extends javax.swing.JFrame {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this.window, e.getCause().getMessage(),
                             "Application Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    class GetFolderAccountsTask extends SwingWorker<Account[], Object> {
+        private MainWindow window;
+        private User user;
+        private Locker locker;
+        private Folder folder;
+
+        public GetFolderAccountsTask(MainWindow window, User user, Locker locker, Folder folder) {
+            this.window = window;
+            this.user = user;
+            this.locker = locker;
+            this.folder = folder;
+        }
+        
+        @Override
+        public Account[] doInBackground() throws LockerRuntimeException {
+            Account[] accounts = this.locker.getFolderAccounts(this.folder.getId(), this.user.getPrivateKey());
+            return accounts;
+        }
+        
+        @Override
+        public void done() {
+            pgbStatus.setIndeterminate(false);
+            lblStatus.setText("Ready");
+            try {
+                Account[] accounts = this.get();
+                
+                DefaultTableModel model = (DefaultTableModel)tblAccounts.getModel();
+                model.setRowCount(0); // Clear the table
+                for (Account account : accounts) {    
+                    model.addRow(new Object[]{account.getName(), account.getUsername(), account.getNotes(), ""});
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this.window, e.getMessage(),
+                                "Application Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
