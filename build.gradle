@@ -18,6 +18,8 @@ dependencies {
     compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.0'
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
+    compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.54'
 }
 
 task fatJar(type: Jar) {

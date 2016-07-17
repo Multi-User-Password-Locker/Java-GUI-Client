@@ -13,6 +13,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
 import me.camerongray.mupl.core.*;
 
 /**
@@ -259,6 +260,21 @@ public class MainWindow extends javax.swing.JFrame {
             } else {
                 this.selectedFolder = this.folderObjects.get(folderName);
                 menuNewAccount.setEnabled(this.selectedFolder.isWrite());
+            }
+            
+            // TODO - Move this into SwingWorker!
+            try {
+                Account[] accounts = this.locker.getFolderAccounts(this.selectedFolder.getId(), this.user.getPrivateKey());
+                
+                DefaultTableModel model = (DefaultTableModel)tblAccounts.getModel();
+                model.setRowCount(0); // Clear the table
+                for (Account account : accounts) {    
+                    model.addRow(new Object[]{account.getName(), account.getUsername(), account.getNotes(), ""});
+                }
+            } catch (LockerRuntimeException e) {
+                JOptionPane.showMessageDialog(this, e.getMessage(),
+                                "New Folder", JOptionPane.ERROR_MESSAGE);
+                return;
             }
         }
     }//GEN-LAST:event_lstFoldersValueChanged

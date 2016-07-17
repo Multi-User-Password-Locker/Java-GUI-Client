@@ -12,4 +12,17 @@
       <task-jvm-args/>
     </task>
   </common-tasks>
+  <built-in-tasks>
+    <task>
+      <display-name>debug</display-name>
+      <non-blocking>no</non-blocking>
+      <task-names>
+        <name must-exist="no">debug</name>
+      </task-names>
+      <task-args>
+        <arg>-PmainClass=me.camerongray.mupl.gui_client.Main</arg>
+      </task-args>
+      <task-jvm-args/>
+    </task>
+  </built-in-tasks>
 </gradle-project-properties>

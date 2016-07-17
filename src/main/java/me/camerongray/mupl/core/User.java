@@ -5,7 +5,22 @@
  */
 package me.camerongray.mupl.core;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.util.Base64;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
@@ -22,10 +37,10 @@ public class User {
     private byte[] pbkdf2Salt;
     private byte[] aesIv;
     private String authHash;
+    private byte[] privateKey;
     
     public User() {}
     
-    // <editor-fold defaultstate="collapsed" desc="Getters/Setters">
     public int getId() {
         return id;
     }
@@ -117,5 +132,25 @@ public class User {
     public void setAuthHash(String authHash) {
         this.authHash = authHash;
     }
-    // </editor-fold>
+
+    public byte[] getPrivateKey() {
+        return privateKey;
+    }
+
+    public void setPrivateKey(byte[] privateKey) {
+        this.privateKey = privateKey;
+    }
+    
+    public void decryptPrivateKey(String password) throws Exception {
+        final int ITERATION_COUNT = 1000;
+        final int KEY_LENGTH = 256;
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        KeySpec spec = new PBEKeySpec(password.toCharArray(), this.pbkdf2Salt, ITERATION_COUNT, KEY_LENGTH);
+        SecretKey key = new SecretKeySpec(skf.generateSecret(spec).getEncoded(), "AES");
+        Cipher dcipher = Cipher.getInstance("AES/CFB8/NoPadding"); // CFB8 makes this byte oriented
+        dcipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(this.aesIv));
+        this.privateKey = dcipher.doFinal(this.encryptedPrivateKey);
+//        String pk = new String(dcipher.doFinal(this.encryptedPrivateKey), "UTF-8");
+//        this.privateKey = pk.substring(0, pk.lastIndexOf("\n")).substring(pk.indexOf("\n")+1).replace("\n", "");
+    }
 }

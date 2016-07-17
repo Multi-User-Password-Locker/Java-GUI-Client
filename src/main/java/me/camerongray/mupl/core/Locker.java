@@ -75,6 +75,7 @@ public class Locker {
                     this.auth_key).asJson().getBody().getObject().getJSONObject("user").toString();
             
             User user = this.objectMapper.readValue(response, User.class);
+            user.decryptPrivateKey(this.password);
             
             return user;
         } catch (Exception e) {
@@ -228,6 +229,32 @@ public class Locker {
         } catch (Exception e) {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }
+    }
+    
+    public Account[] getFolderAccounts(int folderId, byte[] privateKey) throws LockerRuntimeException {
+        ArrayList<Account> accounts = new ArrayList<>();
+        try {
+            JSONObject response = Unirest.get(this.getUrl(
+                        "folders/"+folderId+"/accounts")).basicAuth(this.username,
+                        this.auth_key).asJson().getBody().getObject();            
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            JSONArray accountArray = response.getJSONArray("accounts");
+            for (int i = 0; i < accountArray.length(); i++) {
+                byte[] encryptedMetadata = Base64.getDecoder().decode(accountArray.getJSONObject(i).getString("account_metadata"));
+                byte[] encryptedAesKey = Base64.getDecoder().decode(accountArray.getJSONObject(i).getString("encrypted_aes_key"));
+                accounts.add(new Account(encryptedMetadata, encryptedAesKey, privateKey));
+            }
+            
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+        return accounts.toArray(new Account[accounts.size()]);
     }
     
     public void getAccounts(int folderId) throws LockerRuntimeException {
