@@ -330,7 +330,7 @@ public class MainWindow extends javax.swing.JFrame {
     private void menuEditFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuEditFolderActionPerformed
         if (this.selectedFolder == null)  {
             JOptionPane.showMessageDialog(this, "You must select a folder!",
-                            "Delete Folder", JOptionPane.ERROR_MESSAGE);
+                            "Edit Folder", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
