@@ -147,6 +147,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         jSplitPane1.setRightComponent(jScrollPane2);
 
+        lstFolders.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         lstFolders.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 lstFoldersValueChanged(evt);
@@ -166,6 +167,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu1.add(menuLogout);
 
+        menuExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         menuExit.setText("Exit");
         menuExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -179,6 +181,11 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu2.setText("Actions");
 
         menuNewAccount.setText("New Account");
+        menuNewAccount.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuNewAccountActionPerformed(evt);
+            }
+        });
         jMenu2.add(menuNewAccount);
         jMenu2.add(sepFolder);
 
@@ -338,6 +345,10 @@ public class MainWindow extends javax.swing.JFrame {
         lblStatus.setText("Fetching Permissions...");
         (new GetFolderPermissionsTask(this , this.locker, this.selectedFolder)).execute();
     }//GEN-LAST:event_menuEditFolderActionPerformed
+
+    private void menuNewAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNewAccountActionPerformed
+        new AccountForm(this, true, AccountForm.NEW_MODE, this.locker, this.selectedFolder).setVisible(true);
+    }//GEN-LAST:event_menuNewAccountActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button button1;

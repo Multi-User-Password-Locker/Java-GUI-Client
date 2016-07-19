@@ -7,10 +7,13 @@ package me.camerongray.mupl.core;
 
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -74,5 +77,72 @@ public class Crypto {
             throw new CryptoException(e);
         }
         return Crypto.aesDecrypt(key, iv, encryptedData);
+    }
+    
+    public static byte[] aesEncrypt(byte[] key, byte[] iv, byte[] data) throws CryptoException {
+        return aesEncrypt(new SecretKeySpec(key, "AES"), iv, data);
+    }
+    
+    public static byte[] aesEncrypt(AesKey key, byte[] data) throws CryptoException {
+        return aesEncrypt(new SecretKeySpec(key.getKey(), "AES"), key.getIv(), data);
+    }
+    
+    public static byte[] aesEncrypt(SecretKey key, byte[] iv, byte[] data) throws CryptoException {
+        try {
+            Cipher aesCipher = Cipher.getInstance("AES/CFB8/NoPadding");
+            aesCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+            return aesCipher.doFinal(data);
+        } catch (Exception e) {
+            throw new CryptoException(e);
+        }
+    }
+    
+    // TODO!
+    public static void encryptWithPublicKey(byte[] publicKey, byte[] data) {
+        try {
+            AesKey aesKey = Crypto.generateAesKey();
+            byte[] encrypted = Crypto.aesEncrypt(aesKey, data);
+            byte[] unencrypted = Crypto.aesDecrypt(aesKey.getKey(), aesKey.getIv(), encrypted);
+            System.out.println(new String(unencrypted));
+        } catch (CryptoException ex) {
+            Logger.getLogger(Crypto.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public static AesKey generateAesKey() {
+        final int IV_BYTES = 16;
+        final int KEY_BYTES = 32;
+        SecureRandom random = new SecureRandom();
+        byte[] iv = new byte[IV_BYTES];
+        byte[] key = new byte[KEY_BYTES];
+        random.nextBytes(iv);
+        random.nextBytes(key);
+        return new AesKey(key, iv);
+    }
+}
+
+class AesKey {
+    private byte[] key;
+    private byte[] iv;
+
+    public AesKey(byte[] key, byte[] iv) {
+        this.key = key;
+        this.iv = iv;
+    }
+
+    public byte[] getKey() {
+        return key;
+    }
+
+    public void setKey(byte[] key) {
+        this.key = key;
+    }
+
+    public byte[] getIv() {
+        return iv;
+    }
+
+    public void setIv(byte[] iv) {
+        this.iv = iv;
     }
 }

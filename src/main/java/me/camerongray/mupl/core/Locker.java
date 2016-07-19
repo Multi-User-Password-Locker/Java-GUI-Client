@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.JSONArray;
 
 
@@ -257,7 +259,65 @@ public class Locker {
         return accounts.toArray(new Account[accounts.size()]);
     }
     
-    public void getAccounts(int folderId) throws LockerRuntimeException {
+    private PublicKey[] getFolderPublicKeys(int folderId) throws LockerRuntimeException {
+        ArrayList<PublicKey> publicKeys = new ArrayList<>();
+        try {
+            JSONObject response = Unirest.get(this.getUrl(
+                        "folders/"+folderId+"/public_keys")).basicAuth(this.username,
+                        this.auth_key).asJson().getBody().getObject();            
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            JSONArray accountArray = response.getJSONArray("public_keys");
+            for (int i = 0; i < accountArray.length(); i++) {
+                JSONObject row = accountArray.getJSONObject(i);
+                publicKeys.add(new PublicKey(row.getInt("user_id"),
+                        row.getString("public_key").getBytes()));
+            }
+            
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+        return publicKeys.toArray(new PublicKey[publicKeys.size()]);
+    }
+    
+    public int addAccount(int folderId, String name, String username, String password, String notes) throws LockerRuntimeException {
+        PublicKey[] publicKeys = this.getFolderPublicKeys(folderId);
         
+        for (PublicKey key : publicKeys) {
+            Crypto.encryptWithPublicKey(key.getKey(), "Foobar".getBytes());
+        }
+        
+        return 0;
+    }
+}
+
+class PublicKey {
+    private int userId;
+    private byte[] key;
+
+    public PublicKey(int user_id, byte[] key) {
+        this.userId = user_id;
+        this.key = key;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public byte[] getKey() {
+        return key;
+    }
+
+    public void setKey(byte[] key) {
+        this.key = key;
     }
 }
