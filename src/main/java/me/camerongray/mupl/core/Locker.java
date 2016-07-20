@@ -270,11 +270,12 @@ public class Locker {
                 throw new LockerRuntimeException(response.getString("message"));
             }
             
+            // TODO - Rename accountArray!
             JSONArray accountArray = response.getJSONArray("public_keys");
             for (int i = 0; i < accountArray.length(); i++) {
                 JSONObject row = accountArray.getJSONObject(i);
                 publicKeys.add(new PublicKey(row.getInt("user_id"),
-                        row.getString("public_key").getBytes()));
+                        Base64.getDecoder().decode(row.getString("public_key"))));
             }
             
         } catch (LockerRuntimeException e) {
@@ -285,11 +286,22 @@ public class Locker {
         return publicKeys.toArray(new PublicKey[publicKeys.size()]);
     }
     
+    // TODO!
     public int addAccount(int folderId, String name, String username, String password, String notes) throws LockerRuntimeException {
         PublicKey[] publicKeys = this.getFolderPublicKeys(folderId);
         
         for (PublicKey key : publicKeys) {
-            Crypto.encryptWithPublicKey(key.getKey(), "Foobar".getBytes());
+            Crypto.PublicKeyEncrypted pke = Crypto.rsaEncryptWithPublicKey(key.getKey(), "Foobar".getBytes());
+            User u = this.getCurrentUser();
+            try {
+                u.decryptPrivateKey(this.password);
+                byte[] aesKeyJson = Crypto.rsaDecryptWithPrivateKey(u.getPrivateKey(), pke.getEncryptedAesKey());
+                JSONObject aesKey = new JSONObject(new String(aesKeyJson));
+                byte[] decrypted = Crypto.aesDecrypt(aesKey.getString("key"), aesKey.getString("iv"), pke.getEncryptedData());
+                System.out.println(new String(decrypted));
+            } catch (CryptoException ex) {
+                Logger.getLogger(Locker.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         return 0;

@@ -9,8 +9,10 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,6 +23,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.json.JSONObject;
 
 /**
  *
@@ -97,19 +100,32 @@ public class Crypto {
         }
     }
     
-    // TODO!
-    public static void encryptWithPublicKey(byte[] publicKey, byte[] data) {
+    public static PublicKeyEncrypted rsaEncryptWithPublicKey(byte[] publicKey, byte[] data) {
+        PublicKeyEncrypted pke = null;
         try {
-            AesKey aesKey = Crypto.generateAesKey();
-            byte[] encrypted = Crypto.aesEncrypt(aesKey, data);
-            byte[] unencrypted = Crypto.aesDecrypt(aesKey.getKey(), aesKey.getIv(), encrypted);
-            System.out.println(new String(unencrypted));
-        } catch (CryptoException ex) {
-            Logger.getLogger(Crypto.class.getName()).log(Level.SEVERE, null, ex);
+            Crypto.AesKey aesKey = Crypto.generateAesKey();
+            byte[] encryptedData = Crypto.aesEncrypt(aesKey, data);
+            
+            byte[] aesKeyUnencrypted = (new JSONObject()
+                    .put("key", new String(Base64.getEncoder().encode(aesKey.getKey())))
+                    .put("iv", new String(Base64.getEncoder().encode(aesKey.getIv())))).toString().getBytes();
+            
+            Security.addProvider(new BouncyCastleProvider());
+            Cipher rsaCipher = Cipher.getInstance("RSA/NONE/OAEPWithSHA1AndMGF1Padding", "BC");
+            X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKey);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            Key rsaKey = kf.generatePublic(publicKeySpec);
+            rsaCipher.init(Cipher.ENCRYPT_MODE, rsaKey);
+            
+            byte[] encryptedAesKey = rsaCipher.doFinal(aesKeyUnencrypted);
+            pke = new PublicKeyEncrypted(encryptedAesKey, encryptedData);
+        } catch (Exception e) {
+            Logger.getLogger(Crypto.class.getName()).log(Level.SEVERE, null, e);
         }
+        return pke;
     }
     
-    public static AesKey generateAesKey() {
+    public static Crypto.AesKey generateAesKey() {
         final int IV_BYTES = 16;
         final int KEY_BYTES = 32;
         SecureRandom random = new SecureRandom();
@@ -117,32 +133,58 @@ public class Crypto {
         byte[] key = new byte[KEY_BYTES];
         random.nextBytes(iv);
         random.nextBytes(key);
-        return new AesKey(key, iv);
+        return new Crypto.AesKey(key, iv);
     }
-}
+    
+    public static class AesKey {
+        private byte[] key;
+        private byte[] iv;
 
-class AesKey {
-    private byte[] key;
-    private byte[] iv;
+        public AesKey(byte[] key, byte[] iv) {
+            this.key = key;
+            this.iv = iv;
+        }
 
-    public AesKey(byte[] key, byte[] iv) {
-        this.key = key;
-        this.iv = iv;
+        public byte[] getKey() {
+            return key;
+        }
+
+        public void setKey(byte[] key) {
+            this.key = key;
+        }
+
+        public byte[] getIv() {
+            return iv;
+        }
+
+        public void setIv(byte[] iv) {
+            this.iv = iv;
+        }
     }
+    
+    public static class PublicKeyEncrypted {
+        private byte[] encryptedAesKey;
+        private byte[] encryptedData;
 
-    public byte[] getKey() {
-        return key;
-    }
+        public PublicKeyEncrypted(byte[] encryptedAesKey, byte[] encryptedData) {
+            this.encryptedAesKey = encryptedAesKey;
+            this.encryptedData = encryptedData;
+        }
 
-    public void setKey(byte[] key) {
-        this.key = key;
-    }
+        public byte[] getEncryptedAesKey() {
+            return encryptedAesKey;
+        }
 
-    public byte[] getIv() {
-        return iv;
-    }
+        public void setEncryptedAesKey(byte[] encryptedAesKey) {
+            this.encryptedAesKey = encryptedAesKey;
+        }
 
-    public void setIv(byte[] iv) {
-        this.iv = iv;
+        public byte[] getEncryptedData() {
+            return encryptedData;
+        }
+
+        public void setEncryptedData(byte[] encryptedData) {
+            this.encryptedData = encryptedData;
+        }
     }
 }
