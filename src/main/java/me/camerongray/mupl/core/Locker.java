@@ -286,25 +286,48 @@ public class Locker {
         return publicKeys.toArray(new PublicKey[publicKeys.size()]);
     }
     
-    // TODO!
     public int addAccount(int folderId, String name, String username, String password, String notes) throws LockerRuntimeException {
         PublicKey[] publicKeys = this.getFolderPublicKeys(folderId);
         
-        for (PublicKey key : publicKeys) {
-            Crypto.PublicKeyEncrypted pke = Crypto.rsaEncryptWithPublicKey(key.getKey(), "Foobar".getBytes());
-            User u = this.getCurrentUser();
-            try {
-                u.decryptPrivateKey(this.password);
-                byte[] aesKeyJson = Crypto.rsaDecryptWithPrivateKey(u.getPrivateKey(), pke.getEncryptedAesKey());
-                JSONObject aesKey = new JSONObject(new String(aesKeyJson));
-                byte[] decrypted = Crypto.aesDecrypt(aesKey.getString("key"), aesKey.getString("iv"), pke.getEncryptedData());
-                System.out.println(new String(decrypted));
-            } catch (CryptoException ex) {
-                Logger.getLogger(Locker.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        byte[] metadataBytes = (new JSONObject()
+                .put("name", name)
+                .put("notes", notes)
+                .put("username", username)).toString().getBytes();
         
-        return 0;
+        Base64.Encoder encoder = Base64.getEncoder();
+        
+        try {
+            JSONArray accounts = new JSONArray();
+            for (PublicKey key : publicKeys) {
+                Crypto.AesKey aesKey = Crypto.generateAesKey();
+                byte[] encryptedMetadata = Crypto.aesEncrypt(aesKey, metadataBytes);
+                byte[] encryptedPassword = Crypto.aesEncrypt(aesKey, password.getBytes());
+                byte[] encryptedAesKey = Crypto.rsaEncryptAesKey(key.getKey(), aesKey);
+               
+                accounts.put(new JSONObject()
+                        .put("user_id", key.getUserId())
+                        .put("password", new String(encoder.encode(encryptedPassword)))
+                        .put("account_metadata", new String(encoder.encode(encryptedMetadata)))
+                        .put("encrypted_aes_key", new String(encoder.encode(encryptedAesKey))));
+            }
+            String payload = new JSONObject().put("folder_id", folderId)
+                    .put("encrypted_account_data", accounts).toString();
+            
+            JSONObject response = Unirest.put(this.getUrl("accounts/add")).basicAuth(this.username,
+                    this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
+                            payload).asJson().getBody().getObject();
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            int accountId = response.getInt("account_id");
+            return accountId;
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException(e);
+        }
     }
 }
 

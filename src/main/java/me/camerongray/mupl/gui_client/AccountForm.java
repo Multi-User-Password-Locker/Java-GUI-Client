@@ -7,6 +7,7 @@ package me.camerongray.mupl.gui_client;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import me.camerongray.mupl.core.*;
 
 /**
@@ -172,12 +173,17 @@ public class AccountForm extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
 
+    // TODO - Move into SwingWorker
+    // TODO - Refresh folder list afterwards
+    // TODO - Avoid storing password as string?
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         if (this.mode == AccountForm.NEW_MODE) {
             try {
-                this.locker.addAccount(this.folder.getId(), "Test", "Test", "testing", "");
-            } catch (LockerRuntimeException ex) {
-                Logger.getLogger(AccountForm.class.getName()).log(Level.SEVERE, null, ex);
+                this.locker.addAccount(this.folder.getId(), this.txtAccountName.getText(), 
+                        this.txtUsername.getText(), new String(this.txtPassword.getPassword()), this.txtNotes.getText());
+            } catch (LockerRuntimeException e) {
+                JOptionPane.showMessageDialog(this, e.getCause().getMessage(),
+                        "Error Adding Account", JOptionPane.ERROR_MESSAGE);
             }
         } else if (this.mode == AccountForm.EDIT_MODE) {
             

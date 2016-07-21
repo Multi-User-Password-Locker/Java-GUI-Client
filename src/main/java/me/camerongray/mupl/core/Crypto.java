@@ -100,7 +100,7 @@ public class Crypto {
         }
     }
     
-    public static PublicKeyEncrypted rsaEncryptWithPublicKey(byte[] publicKey, byte[] data) {
+    public static PublicKeyEncrypted rsaEncryptWithPublicKey(byte[] publicKey, byte[] data) throws CryptoException {
         PublicKeyEncrypted pke = null;
         try {
             Crypto.AesKey aesKey = Crypto.generateAesKey();
@@ -120,9 +120,29 @@ public class Crypto {
             byte[] encryptedAesKey = rsaCipher.doFinal(aesKeyUnencrypted);
             pke = new PublicKeyEncrypted(encryptedAesKey, encryptedData);
         } catch (Exception e) {
-            Logger.getLogger(Crypto.class.getName()).log(Level.SEVERE, null, e);
+            throw new CryptoException(e);
         }
         return pke;
+    }
+    
+    public static byte[] rsaEncryptAesKey(byte[] publicKey, Crypto.AesKey aesKey) throws CryptoException {
+        try {           
+            byte[] aesKeyUnencrypted = (new JSONObject()
+                    .put("key", new String(Base64.getEncoder().encode(aesKey.getKey())))
+                    .put("iv", new String(Base64.getEncoder().encode(aesKey.getIv())))).toString().getBytes();
+            
+            Security.addProvider(new BouncyCastleProvider());
+            Cipher rsaCipher = Cipher.getInstance("RSA/NONE/OAEPWithSHA1AndMGF1Padding", "BC");
+            X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKey);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            Key rsaKey = kf.generatePublic(publicKeySpec);
+            rsaCipher.init(Cipher.ENCRYPT_MODE, rsaKey);
+            
+            byte[] encryptedAesKey = rsaCipher.doFinal(aesKeyUnencrypted);
+            return encryptedAesKey;
+        } catch (Exception e) {
+            throw new CryptoException(e);
+        }
     }
     
     public static Crypto.AesKey generateAesKey() {
