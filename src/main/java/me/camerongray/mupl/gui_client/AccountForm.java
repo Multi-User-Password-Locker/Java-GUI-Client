@@ -20,17 +20,19 @@ public class AccountForm extends javax.swing.JDialog {
     private int mode;
     private Locker locker;
     private Folder folder;
+    private MainWindow parent;
 
     
     /**
      * Creates new form AccountForm
      */
-    public AccountForm(java.awt.Frame parent, boolean modal, int mode, Locker locker, Folder folder) {
+    public AccountForm(MainWindow parent, boolean modal, int mode, Locker locker, Folder folder) {
         super(parent, modal);
         initComponents();
         this.mode = mode;
         this.locker = locker;
         this.folder = folder;
+        this.parent = parent;
         if (mode == AccountForm.EDIT_MODE) {
             this.setTitle("Edit Account");
             btnSubmit.setText("Save Account");
@@ -174,7 +176,6 @@ public class AccountForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCancelActionPerformed
 
     // TODO - Move into SwingWorker
-    // TODO - Refresh folder list afterwards
     // TODO - Avoid storing password as string?
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         if (this.mode == AccountForm.NEW_MODE) {
@@ -184,10 +185,13 @@ public class AccountForm extends javax.swing.JDialog {
             } catch (LockerRuntimeException e) {
                 JOptionPane.showMessageDialog(this, e.getCause().getMessage(),
                         "Error Adding Account", JOptionPane.ERROR_MESSAGE);
+                return;
             }
         } else if (this.mode == AccountForm.EDIT_MODE) {
             
         }
+        this.parent.refreshFolderAccounts();
+        this.dispose();
     }//GEN-LAST:event_btnSubmitActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

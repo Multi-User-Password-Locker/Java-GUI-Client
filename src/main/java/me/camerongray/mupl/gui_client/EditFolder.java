@@ -5,11 +5,13 @@
  */
 package me.camerongray.mupl.gui_client;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import me.camerongray.mupl.core.*;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  *
@@ -21,6 +23,7 @@ public class EditFolder extends javax.swing.JDialog {
     private Folder folder;
     private FolderPermission[] permissions;
     private HashMap<Integer, User> userMap = new HashMap<>();
+    private ArrayList<Integer> noPermissionUserIds = new ArrayList<>();
     
     /**
      * Creates new form EditFolder
@@ -49,6 +52,9 @@ public class EditFolder extends javax.swing.JDialog {
                 p.isRead(),
                 p.isWrite()
             });
+            if (!p.isRead()) {
+                noPermissionUserIds.add(p.getUser().getId());
+            }
         }
     }
 
@@ -205,16 +211,31 @@ public class EditFolder extends javax.swing.JDialog {
         btnSaveFolder.setEnabled(false);
         DefaultTableModel model = (DefaultTableModel)tblPermissions.getModel();
         ArrayList<FolderPermission> permissionArrayList = new ArrayList<>();
+        ArrayList<Integer> readUserIds = new ArrayList<>();
         for (int i = 0; i < model.getRowCount(); i++) {
+            boolean canRead = (boolean)model.getValueAt(i, COLUMN_READ);
+            User user = this.userMap.get((Integer)model.getValueAt(i, COLUMN_ID));
             permissionArrayList.add(new FolderPermission(
-                    this.userMap.get((Integer)model.getValueAt(i, COLUMN_ID)),
+                    user,
                     this.folder,
-                    (boolean)model.getValueAt(i, COLUMN_READ),
+                    canRead,
                     (boolean)model.getValueAt(i, COLUMN_WRITE)
             ));
+            if (canRead) {
+                readUserIds.add(user.getId());
+            }
         }
         FolderPermission[] permissionArray = permissionArrayList.toArray(
                 new FolderPermission[permissionArrayList.size()]);
+        
+        // Get an array of user IDs that have just been granted read permission
+        // This is used to determine which users the folder's contents need to be
+        // re-encrypted for
+        ArrayList<Integer> alNewReadUsers = new ArrayList<>(readUserIds);
+        alNewReadUsers.retainAll(this.noPermissionUserIds);
+        int[] newReadUsers = ArrayUtils.toPrimitive(alNewReadUsers.toArray(new Integer[alNewReadUsers.size()]));
+        
+        System.out.println(Arrays.toString(newReadUsers));
         
         this.folder.setName(txtFolderName.getText());
         new SaveFolderTask(this, this.parent, this.locker, this.folder, permissionArray).execute();

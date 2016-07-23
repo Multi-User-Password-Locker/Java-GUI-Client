@@ -293,13 +293,19 @@ public class MainWindow extends javax.swing.JFrame {
             } else {
                 this.selectedFolder = this.folderObjects.get(folderName);
                 menuNewAccount.setEnabled(this.selectedFolder.isWrite());
-                pgbStatus.setIndeterminate(true);
-                lblStatus.setText("Getting Accounts...");
-                (new GetFolderAccountsTask(this, this.user, this.locker, this.selectedFolder)).execute();
+                this.refreshFolderAccounts();
             }
         }
     }//GEN-LAST:event_lstFoldersValueChanged
 
+    public void refreshFolderAccounts() {
+        if (this.selectedFolder != null) {
+            pgbStatus.setIndeterminate(true);
+            lblStatus.setText("Getting Accounts...");
+            (new GetFolderAccountsTask(this, this.user, this.locker, this.selectedFolder)).execute();
+        }
+    }
+    
     private void menuRefreshFoldersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuRefreshFoldersActionPerformed
         pgbStatus.setIndeterminate(true);
         lblStatus.setText("Getting folders...");
