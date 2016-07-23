@@ -246,9 +246,10 @@ public class Locker {
             
             JSONArray accountArray = response.getJSONArray("accounts");
             for (int i = 0; i < accountArray.length(); i++) {
-                byte[] encryptedMetadata = Base64.getDecoder().decode(accountArray.getJSONObject(i).getString("account_metadata"));
-                byte[] encryptedAesKey = Base64.getDecoder().decode(accountArray.getJSONObject(i).getString("encrypted_aes_key"));
-                accounts.add(new Account(encryptedMetadata, encryptedAesKey, privateKey));
+                JSONObject accountObject = accountArray.getJSONObject(i);
+                byte[] encryptedMetadata = Base64.getDecoder().decode(accountObject.getString("account_metadata"));
+                byte[] encryptedAesKey = Base64.getDecoder().decode(accountObject.getString("encrypted_aes_key"));
+                accounts.add(new Account(accountObject.getInt("id"), encryptedMetadata, encryptedAesKey, privateKey));
             }
             
         } catch (LockerRuntimeException e) {

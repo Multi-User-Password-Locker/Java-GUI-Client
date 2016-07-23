@@ -5,6 +5,7 @@
  */
 package me.camerongray.mupl.gui_client;
 
+import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -12,6 +13,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import me.camerongray.mupl.core.*;
@@ -26,6 +28,9 @@ public class MainWindow extends javax.swing.JFrame {
     private User user;
     private HashMap<String, Folder> folderObjects = new HashMap<String, Folder>();
     private Folder selectedFolder;
+    private ButtonColumn bcView;
+    
+    private HashMap<Integer, Integer> rowAccountIds = new HashMap<>();
     
     /**
      * Creates new form MainWindow
@@ -35,6 +40,19 @@ public class MainWindow extends javax.swing.JFrame {
         this.user = user;
         initComponents();
         populateUi();
+        
+        
+        // Table buttons - Column indices below must be kept up to date with the form
+        final int VIEW_COLUMN_INDEX = 3;
+        this.bcView = new ButtonColumn(tblAccounts,
+            new javax.swing.AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int accountId = rowAccountIds.get(Integer.valueOf(e.getActionCommand()));
+                    System.out.println(accountId);
+                }
+            }
+        ,VIEW_COLUMN_INDEX);
     }
     
     private void populateUi() {
@@ -133,7 +151,7 @@ public class MainWindow extends javax.swing.JFrame {
                 java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false
+                false, false, false, true
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -146,6 +164,12 @@ public class MainWindow extends javax.swing.JFrame {
         });
         tblAccounts.getTableHeader().setReorderingAllowed(false);
         jScrollPane2.setViewportView(tblAccounts);
+        if (tblAccounts.getColumnModel().getColumnCount() > 0) {
+            tblAccounts.getColumnModel().getColumn(3).setMinWidth(100);
+            tblAccounts.getColumnModel().getColumn(3).setPreferredWidth(100);
+            tblAccounts.getColumnModel().getColumn(3).setMaxWidth(100);
+            tblAccounts.getColumnModel().getColumn(3).setCellEditor(this.bcView);
+        }
 
         jSplitPane1.setRightComponent(jScrollPane2);
 
@@ -468,8 +492,13 @@ public class MainWindow extends javax.swing.JFrame {
                 
                 DefaultTableModel model = (DefaultTableModel)tblAccounts.getModel();
                 model.setRowCount(0); // Clear the table
+                this.window.rowAccountIds.clear();
+                int rowNum = 0;
                 for (Account account : accounts) {    
-                    model.addRow(new Object[]{account.getName(), account.getUsername(), account.getNotes(), ""});
+                    model.addRow(new Object[]{account.getName(), account.getUsername(), account.getNotes(),
+                        (this.window.user.isAdmin()) ? "View/Edit" : "View"});
+                    this.window.rowAccountIds.put(rowNum, account.getId());
+                    rowNum++;
                 }
             } catch (Exception e) {
                 e.printStackTrace();

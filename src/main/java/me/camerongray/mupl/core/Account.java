@@ -17,13 +17,14 @@ public class Account {
     private String notes;
     private String password;
     
-    public Account(byte[] encryptedMetadata, byte[] encryptedAesKey, byte[] privateKey) throws CryptoException {
+    public Account(int id, byte[] encryptedMetadata, byte[] encryptedAesKey, byte[] privateKey) throws CryptoException {
         String aesKeyJson = new String(Crypto.rsaDecryptWithPrivateKey(privateKey, encryptedAesKey));
         JSONObject aesKeyParts = new JSONObject(aesKeyJson);
         
         String metadataJson = new String(Crypto.aesDecrypt(aesKeyParts.getString("key"), aesKeyParts.getString("iv"), encryptedMetadata));
         
         JSONObject metadata = new JSONObject(metadataJson);
+        this.id = id;
         this.name = metadata.getString("name");
         this.username = metadata.getString("username");
         this.notes = metadata.getString("notes");

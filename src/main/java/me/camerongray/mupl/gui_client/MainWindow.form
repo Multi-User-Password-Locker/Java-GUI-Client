@@ -205,7 +205,7 @@
                     <Column editable="false" title="Name" type="java.lang.String"/>
                     <Column editable="false" title="Username" type="java.lang.String"/>
                     <Column editable="false" title="Notes" type="java.lang.String"/>
-                    <Column editable="false" title="" type="java.lang.Object"/>
+                    <Column editable="true" title="" type="java.lang.Object"/>
                   </Table>
                 </Property>
                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -225,9 +225,11 @@
                       <Editor/>
                       <Renderer/>
                     </Column>
-                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                    <Column maxWidth="100" minWidth="100" prefWidth="100" resizable="true">
                       <Title/>
-                      <Editor/>
+                      <Editor editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                        <Connection code="this.bcView" type="code"/>
+                      </Editor>
                       <Renderer/>
                     </Column>
                   </TableColumnModel>
