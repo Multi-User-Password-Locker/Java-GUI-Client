@@ -120,6 +120,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         button1.setLabel("button1");
 
+        tblAccounts.setAutoCreateRowSorter(true);
         tblAccounts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -143,6 +144,7 @@ public class MainWindow extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        tblAccounts.getTableHeader().setReorderingAllowed(false);
         jScrollPane2.setViewportView(tblAccounts);
 
         jSplitPane1.setRightComponent(jScrollPane2);
@@ -267,11 +269,10 @@ public class MainWindow extends javax.swing.JFrame {
             } else {
                 this.selectedFolder = this.folderObjects.get(folderName);
                 menuNewAccount.setEnabled(this.selectedFolder.isWrite());
+                pgbStatus.setIndeterminate(true);
+                lblStatus.setText("Getting Accounts...");
+                (new GetFolderAccountsTask(this, this.user, this.locker, this.selectedFolder)).execute();
             }
-            
-            pgbStatus.setIndeterminate(true);
-            lblStatus.setText("Getting Accounts...");
-            (new GetFolderAccountsTask(this, this.user, this.locker, this.selectedFolder)).execute();
         }
     }//GEN-LAST:event_lstFoldersValueChanged
 
