@@ -47,9 +47,17 @@ public class MainWindow extends javax.swing.JFrame {
         this.bcView = new ButtonColumn(tblAccounts,
             new javax.swing.AbstractAction() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
-                    int accountId = rowAccountIds.get(Integer.valueOf(e.getActionCommand()));
-                    System.out.println(accountId);
+                public void actionPerformed(ActionEvent evt) {
+                    int accountId = rowAccountIds.get(Integer.valueOf(evt.getActionCommand()));
+                    try {
+                        // TODO: Move into SwingWorker
+                        Account account = locker.getAccount(accountId, user.getPrivateKey());
+                        new AccountForm(null, false, locker, account, user.isAdmin()).setVisible(true);
+                    } catch (LockerRuntimeException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(null, e.getCause().getMessage(),
+                                    "Application Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             }
         ,VIEW_COLUMN_INDEX);
@@ -162,6 +170,7 @@ public class MainWindow extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        tblAccounts.setRowHeight(20);
         tblAccounts.getTableHeader().setReorderingAllowed(false);
         jScrollPane2.setViewportView(tblAccounts);
         if (tblAccounts.getColumnModel().getColumnCount() > 0) {
@@ -302,7 +311,7 @@ public class MainWindow extends javax.swing.JFrame {
         if (this.selectedFolder != null) {
             pgbStatus.setIndeterminate(true);
             lblStatus.setText("Getting Accounts...");
-            (new GetFolderAccountsTask(this, this.user, this.locker, this.selectedFolder)).execute();
+            (new GetFolderAccountsTask(this, this.selectedFolder)).execute();
         }
     }
     
@@ -374,11 +383,11 @@ public class MainWindow extends javax.swing.JFrame {
         
         pgbStatus.setIndeterminate(true);
         lblStatus.setText("Fetching Permissions...");
-        (new GetFolderPermissionsTask(this , this.locker, this.selectedFolder)).execute();
+        (new GetFolderPermissionsTask(this, this.selectedFolder)).execute();
     }//GEN-LAST:event_menuEditFolderActionPerformed
 
     private void menuNewAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNewAccountActionPerformed
-        new AccountForm(this, true, AccountForm.NEW_MODE, this.locker, this.selectedFolder).setVisible(true);
+        new AccountForm(this, true, this.locker, this.selectedFolder).setVisible(true);
     }//GEN-LAST:event_menuNewAccountActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -442,17 +451,15 @@ public class MainWindow extends javax.swing.JFrame {
     
     class GetFolderPermissionsTask extends SwingWorker<FolderPermission[], Object> {
         private Folder folder;
-        private Locker locker;
         private MainWindow window;
-        public GetFolderPermissionsTask(MainWindow window, Locker locker, Folder folder) {
+        public GetFolderPermissionsTask(MainWindow window, Folder folder) {
             this.folder = folder;
-            this.locker = locker;
             this.window = window;
         }
         
         @Override
         public FolderPermission[] doInBackground() throws Exception {
-            return this.locker.getFolderPermissions(this.folder);
+            return this.window.locker.getFolderPermissions(this.folder);
         }
         
         @Override
@@ -461,7 +468,7 @@ public class MainWindow extends javax.swing.JFrame {
             lblStatus.setText("Ready");
             try {
                 FolderPermission[] permissions = this.get();
-                    new EditFolder(this.window, true, this.locker, this.folder, permissions).setVisible(true);
+                    new EditFolder(this.window, true, this.window.user, this.window.locker, this.folder, permissions).setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this.window, e.getCause().getMessage(),
@@ -472,20 +479,16 @@ public class MainWindow extends javax.swing.JFrame {
     
     class GetFolderAccountsTask extends SwingWorker<Account[], Object> {
         private MainWindow window;
-        private User user;
-        private Locker locker;
         private Folder folder;
 
-        public GetFolderAccountsTask(MainWindow window, User user, Locker locker, Folder folder) {
+        public GetFolderAccountsTask(MainWindow window, Folder folder) {
             this.window = window;
-            this.user = user;
-            this.locker = locker;
             this.folder = folder;
         }
         
         @Override
         public Account[] doInBackground() throws LockerRuntimeException {
-            Account[] accounts = this.locker.getFolderAccounts(this.folder.getId(), this.user.getPrivateKey());
+            Account[] accounts = this.window.locker.getFolderAccounts(this.folder.getId(), this.window.user.getPrivateKey());
             return accounts;
         }
         

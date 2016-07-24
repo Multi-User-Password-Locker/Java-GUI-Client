@@ -236,7 +236,6 @@ public class Login extends javax.swing.JDialog {
             Locker locker = new Locker(hostname, port, username, password);
 
             if (locker.checkAuth()) {
-                Object result = new Object();
                 return new LoginTaskResult(locker.getCurrentUser(), locker);
             } else {
                 throw new LockerSecurityException("Incorrect Username/Password, Please try again!");

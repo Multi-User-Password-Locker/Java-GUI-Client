@@ -186,7 +186,7 @@ public class Locker {
         }
     }
     
-    public void setFolderPermissions(int folderId, FolderPermission[] permissions) throws LockerRuntimeException {
+    public void setFolderPermissions(int folderId, byte[] privateKey, FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerRuntimeException {
         JSONArray json_permissions = new JSONArray();
         for (FolderPermission p : permissions) {
             JSONObject permission = new JSONObject();
@@ -195,10 +195,18 @@ public class Locker {
             permission.put("write", p.isWrite());
             json_permissions.put(permission);
         }
+        
         JSONObject payload = new JSONObject();
         payload.put("permissions", json_permissions);
         
         try {
+            // TODO, needs to be finished after account password retrieval is implemented!
+//            JSONArray encryptedAccounts = new JSONArray();
+//            Account[] accounts = this.getFolderAccounts(folderId, privateKey);
+//            for (Account a : accounts) {
+//                EncryptedAccount ea = this.encryptAccount(folderId, a.getName(), a.getUsername(), a.getPassword(), a.getNotes());
+//            }
+            
             JSONObject response = Unirest.post(this.getUrl("folders/" + folderId + "/permissions")).basicAuth(this.username,
                         this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
                                 payload.toString()).asJson().getBody().getObject();
@@ -321,6 +329,10 @@ public class Locker {
     }
     
     private EncryptedAccount[] encryptAccount(int folderId, String name, String username, String password, String notes) throws LockerRuntimeException {
+        return this.encryptAccount(folderId, name, username, password, notes, null);
+    }
+    
+    private EncryptedAccount[] encryptAccount(int folderId, String name, String username, String password, String notes, ArrayList<Integer> userIds) throws LockerRuntimeException {
         PublicKey[] publicKeys = this.getFolderPublicKeys(folderId);
 
         byte[] metadataBytes = (new JSONObject()
@@ -332,12 +344,14 @@ public class Locker {
         try {
             ArrayList<EncryptedAccount> encryptedAccounts = new ArrayList<>();
             for (PublicKey key : publicKeys) {
-                Crypto.AesKey aesKey = Crypto.generateAesKey();
-                byte[] encryptedMetadata = Crypto.aesEncrypt(aesKey, metadataBytes);
-                byte[] encryptedPassword = Crypto.aesEncrypt(aesKey, password.getBytes());
-                byte[] encryptedAesKey = Crypto.rsaEncryptAesKey(key.getKey(), aesKey);
+                if (userIds == null || userIds.contains(key.getUserId())) {
+                    Crypto.AesKey aesKey = Crypto.generateAesKey();
+                    byte[] encryptedMetadata = Crypto.aesEncrypt(aesKey, metadataBytes);
+                    byte[] encryptedPassword = Crypto.aesEncrypt(aesKey, password.getBytes());
+                    byte[] encryptedAesKey = Crypto.rsaEncryptAesKey(key.getKey(), aesKey);
 
-                encryptedAccounts.add(new EncryptedAccount(key.getUserId(), encryptedMetadata, encryptedPassword, encryptedAesKey));
+                    encryptedAccounts.add(new EncryptedAccount(key.getUserId(), encryptedMetadata, encryptedPassword, encryptedAesKey));
+                }
             }
             
             return encryptedAccounts.toArray(new EncryptedAccount[encryptedAccounts.size()]);
@@ -348,7 +362,7 @@ public class Locker {
     
     public Account getAccount(int accountId, byte[] privateKey) throws LockerRuntimeException {
         try {
-            JSONObject response = Unirest.get(this.getUrl("accounts/"+accountId+"/"))
+            JSONObject response = Unirest.get(this.getUrl("accounts/"+accountId))
                     .basicAuth(this.username, this.auth_key).asJson().getBody().getObject();            
             
             if (!response.isNull("error")) {

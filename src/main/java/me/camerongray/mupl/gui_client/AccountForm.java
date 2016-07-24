@@ -17,31 +17,50 @@ import me.camerongray.mupl.core.*;
 public class AccountForm extends javax.swing.JDialog {
     public static final int EDIT_MODE = 0;
     public static final int NEW_MODE = 1;
+    public static final int VIEW_MODE = 2;
     private int mode;
     private Locker locker;
     private Folder folder;
     private MainWindow parent;
+    private Account account;
 
     
-    /**
-     * Creates new form AccountForm
-     */
-    public AccountForm(MainWindow parent, boolean modal, int mode, Locker locker, Folder folder) {
+    // Show form for creating new account
+    public AccountForm(MainWindow parent, boolean modal, Locker locker, Folder folder) {
         super(parent, modal);
         initComponents();
         this.mode = mode;
         this.locker = locker;
         this.folder = folder;
         this.parent = parent;
-        if (mode == AccountForm.EDIT_MODE) {
-            this.setTitle("Edit Account");
-            btnSubmit.setText("Save Account");
-            
-        } else if (mode == AccountForm.NEW_MODE) {
-            this.setTitle("New Account");
-            btnSubmit.setText("Add Account");
-        }
+        this.mode = AccountForm.NEW_MODE;
+        this.setTitle("New Account");
+        btnSubmit.setText("Add Account");
+        btnCancel.setText("Cancel");
         this.getRootPane().setDefaultButton(btnSubmit);
+    }
+    
+    // Show form for viewing/editing an existing account
+    public AccountForm(MainWindow parent, boolean modal, Locker locker, Account account, boolean canEdit) {
+        super(parent, modal);
+        initComponents();
+        this.locker = locker;
+        this.parent = parent;
+        this.account = account;
+        if (canEdit) {
+            this.mode = AccountForm.EDIT_MODE;
+            this.setTitle("View/Edit Account");
+            btnSubmit.setText("Save Account");
+            this.getRootPane().setDefaultButton(btnSubmit);
+        } else {
+            this.mode = AccountForm.VIEW_MODE;
+            this.setTitle("View Account");
+            btnSubmit.setVisible(false);
+        }
+        btnCancel.setText("Close");
+        this.txtAccountName.setText(this.account.getName());
+        this.txtUsername.setText(this.account.getUsername());
+        this.txtNotes.setText(this.account.getNotes());
     }
 
     /**
@@ -65,6 +84,7 @@ public class AccountForm extends javax.swing.JDialog {
         btnSubmit = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setLocationByPlatform(true);
@@ -93,7 +113,7 @@ public class AccountForm extends javax.swing.JDialog {
             }
         });
 
-        btnCancel.setText("Cancel");
+        btnCancel.setText(" ");
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCancelActionPerformed(evt);
@@ -117,18 +137,20 @@ public class AccountForm extends javax.swing.JDialog {
                             .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1)
-                            .addComponent(txtAccountName)
                             .addComponent(txtUsername, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 271, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(chkShowPassword, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(322, 322, 322))))
+                                .addGap(316, 316, 316))
+                            .addComponent(txtAccountName)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 740, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(btnCancel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnSubmit)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -147,16 +169,22 @@ public class AccountForm extends javax.swing.JDialog {
                     .addComponent(jLabel3)
                     .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(chkShowPassword))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(184, 184, 184)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnSubmit)
-                    .addComponent(btnCancel))
+                    .addComponent(btnCancel)
+                    .addComponent(btnSubmit))
                 .addContainerGap())
         );
 
@@ -180,15 +208,15 @@ public class AccountForm extends javax.swing.JDialog {
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         if (this.mode == AccountForm.NEW_MODE) {
             try {
-                this.locker.addAccount(this.folder.getId(), this.txtAccountName.getText(), 
-                        this.txtUsername.getText(), new String(this.txtPassword.getPassword()), this.txtNotes.getText());
+                this.locker.addAccount(this.folder.getId(), this.txtAccountName.getText(),
+                    this.txtUsername.getText(), new String(this.txtPassword.getPassword()), this.txtNotes.getText());
             } catch (LockerRuntimeException e) {
                 JOptionPane.showMessageDialog(this, e.getCause().getMessage(),
-                        "Error Adding Account", JOptionPane.ERROR_MESSAGE);
+                    "Error Adding Account", JOptionPane.ERROR_MESSAGE);
                 return;
             }
         } else if (this.mode == AccountForm.EDIT_MODE) {
-            
+
         }
         this.parent.refreshFolderAccounts();
         this.dispose();
@@ -198,6 +226,7 @@ public class AccountForm extends javax.swing.JDialog {
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnSubmit;
     private javax.swing.JCheckBox chkShowPassword;
+    private javax.swing.Box.Filler filler1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

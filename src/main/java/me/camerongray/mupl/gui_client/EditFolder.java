@@ -21,29 +21,29 @@ public class EditFolder extends javax.swing.JDialog {
     private MainWindow parent;
     private Locker locker;
     private Folder folder;
-    private FolderPermission[] permissions;
+    private User user;
     private HashMap<Integer, User> userMap = new HashMap<>();
     private ArrayList<Integer> noPermissionUserIds = new ArrayList<>();
     
     /**
      * Creates new form EditFolder
      */
-    public EditFolder(MainWindow parent, boolean modal, Locker locker, Folder folder, FolderPermission[] permissions) {
+    public EditFolder(MainWindow parent, boolean modal, User user, Locker locker, Folder folder, FolderPermission[] permissions) {
         super(parent, modal);
         this.parent = parent;
+        this.user = user;
         this.locker = locker;
         this.folder = folder;
-        this.permissions = permissions;
         initComponents();
         this.panelSavingFolder.setVisible(false);
         this.getRootPane().setDefaultButton(btnSaveFolder);
-        populateUi();
+        populateUi(permissions);
     }
     
-    private void populateUi() {
+    private void populateUi(FolderPermission[] permissions) {
         this.txtFolderName.setText(this.folder.getName());
         DefaultTableModel model = (DefaultTableModel)tblPermissions.getModel();
-        for (FolderPermission p : this.permissions) {
+        for (FolderPermission p : permissions) {
             userMap.put(p.getUser().getId(), p.getUser());
             model.addRow(new Object[]{
                 p.getUser().getId(),
@@ -231,14 +231,11 @@ public class EditFolder extends javax.swing.JDialog {
         // Get an array of user IDs that have just been granted read permission
         // This is used to determine which users the folder's contents need to be
         // re-encrypted for
-        ArrayList<Integer> alNewReadUsers = new ArrayList<>(readUserIds);
-        alNewReadUsers.retainAll(this.noPermissionUserIds);
-        int[] newReadUsers = ArrayUtils.toPrimitive(alNewReadUsers.toArray(new Integer[alNewReadUsers.size()]));
-        
-        System.out.println(Arrays.toString(newReadUsers));
-        
+        ArrayList<Integer> newReadUsers = new ArrayList<>(readUserIds);
+        newReadUsers.retainAll(this.noPermissionUserIds);
+                
         this.folder.setName(txtFolderName.getText());
-        new SaveFolderTask(this, this.parent, this.locker, this.folder, permissionArray).execute();
+        new SaveFolderTask(this, this.parent, this.locker, this.folder, permissionArray, newReadUsers).execute();
     }//GEN-LAST:event_btnSaveFolderActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -255,24 +252,20 @@ public class EditFolder extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     class SaveFolderTask extends SwingWorker<Void, Object> {
-        private javax.swing.JDialog dialog;
-        private MainWindow parent;
-        private Locker locker;
-        private Folder folder;
+        private EditFolder dialog;
+        private ArrayList<Integer> newReadUsers;
         private FolderPermission[] permissions;
 
-        public SaveFolderTask(javax.swing.JDialog dialog, MainWindow parent, Locker locker, Folder folder, FolderPermission[] permissions) {
+        public SaveFolderTask(EditFolder dialog, MainWindow parent, Locker locker, Folder folder, FolderPermission[] permissions, ArrayList<Integer> newReadUsers) {
             this.dialog = dialog;
-            this.parent = parent;
-            this.locker = locker;
-            this.folder = folder;
+            this.newReadUsers = newReadUsers;
             this.permissions = permissions;
         }
 
         @Override
         public Void doInBackground() throws Exception {
-            this.locker.setFolderPermissions(this.folder.getId(), this.permissions);
-            this.locker.updateFolder(this.folder);
+            this.dialog.locker.setFolderPermissions(this.dialog.folder.getId(), this.dialog.user.getPrivateKey(), this.permissions, this.newReadUsers);
+            this.dialog.locker.updateFolder(this.dialog.folder);
             return null;
         }
 
@@ -282,10 +275,11 @@ public class EditFolder extends javax.swing.JDialog {
             btnSaveFolder.setEnabled(true);
             try {
                 this.get();
-                this.parent.refreshFolderList();
+                this.dialog.parent.refreshFolderList();
                 this.dialog.dispose();
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(dialog, e.getCause().getMessage(),
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this.dialog, e.getCause().getMessage(),
                         "Error Saving Folder", JOptionPane.ERROR_MESSAGE);
             }
         }
