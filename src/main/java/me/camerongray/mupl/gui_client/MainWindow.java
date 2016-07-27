@@ -49,15 +49,9 @@ public class MainWindow extends javax.swing.JFrame {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     int accountId = rowAccountIds.get(Integer.valueOf(evt.getActionCommand()));
-                    try {
-                        // TODO: Move into SwingWorker
-                        Account account = locker.getAccount(accountId, user.getPrivateKey());
-                        new AccountForm(null, false, locker, account, user.isAdmin()).setVisible(true);
-                    } catch (LockerRuntimeException e) {
-                        e.printStackTrace();
-                        JOptionPane.showMessageDialog(null, e.getCause().getMessage(),
-                                    "Application Error", JOptionPane.ERROR_MESSAGE);
-                    }
+                    pgbStatus.setIndeterminate(true);
+                    lblStatus.setText("Getting Account...");
+                    (new GetAccountTask(MainWindow.this, accountId)).execute();
                 }
             }
         ,VIEW_COLUMN_INDEX);
@@ -513,6 +507,36 @@ public class MainWindow extends javax.swing.JFrame {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this.window, e.getMessage(),
                                 "Application Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    class GetAccountTask extends SwingWorker<Account, Object> {
+        private MainWindow window;
+        private int accountId;
+        
+        public GetAccountTask(MainWindow window, int accountId) {
+            this.window = window;
+            this.accountId = accountId;
+        }
+        
+        @Override
+        public Account doInBackground() throws LockerRuntimeException {
+            Account account = locker.getAccount(accountId, user.getPrivateKey());
+            return account;
+        }
+        
+        @Override
+        public void done() {
+            pgbStatus.setIndeterminate(false);
+            lblStatus.setText("Ready");
+            try {
+                Account account = this.get();
+                new AccountForm(window, false, locker, window.user, account, user.isAdmin()).setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(window, e.getCause().getMessage(),
+                            "Application Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

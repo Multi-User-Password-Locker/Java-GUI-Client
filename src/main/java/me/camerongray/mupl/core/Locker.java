@@ -381,6 +381,30 @@ public class Locker {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }
     }
+    
+    public String getAccountPassword(int accountId, byte[] privateKey) throws LockerRuntimeException {
+        try {
+            JSONObject response = Unirest.get(this.getUrl("accounts/"+accountId+"/password"))
+                    .basicAuth(this.username, this.auth_key).asJson().getBody().getObject();            
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            JSONObject accountObject = response.getJSONObject("password");
+            byte[] encryptedPassword = Base64.getDecoder().decode(accountObject.getString("encrypted_password"));
+            byte[] encryptedAesKey = Base64.getDecoder().decode(accountObject.getString("encrypted_aes_key"));
+            
+            JSONObject aesKeyParts = new JSONObject(new String(Crypto.rsaDecryptWithPrivateKey(privateKey, encryptedAesKey)));
+
+            String password = new String(Crypto.aesDecrypt(aesKeyParts.getString("key"), aesKeyParts.getString("iv"), encryptedPassword));
+            return password;
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
 }
 
 class EncryptedAccount {

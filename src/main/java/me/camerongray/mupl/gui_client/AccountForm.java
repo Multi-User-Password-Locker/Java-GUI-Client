@@ -23,6 +23,7 @@ public class AccountForm extends javax.swing.JDialog {
     private Folder folder;
     private MainWindow parent;
     private Account account;
+    private User user;
 
     
     // Show form for creating new account
@@ -37,16 +38,18 @@ public class AccountForm extends javax.swing.JDialog {
         this.setTitle("New Account");
         btnSubmit.setText("Add Account");
         btnCancel.setText("Cancel");
+        btnGetPassword.setVisible(false);
         this.getRootPane().setDefaultButton(btnSubmit);
     }
     
     // Show form for viewing/editing an existing account
-    public AccountForm(MainWindow parent, boolean modal, Locker locker, Account account, boolean canEdit) {
+    public AccountForm(MainWindow parent, boolean modal, Locker locker, User user, Account account, boolean canEdit) {
         super(parent, modal);
         initComponents();
         this.locker = locker;
         this.parent = parent;
         this.account = account;
+        this.user = user;
         if (canEdit) {
             this.mode = AccountForm.EDIT_MODE;
             this.setTitle("View/Edit Account");
@@ -55,6 +58,8 @@ public class AccountForm extends javax.swing.JDialog {
         } else {
             this.mode = AccountForm.VIEW_MODE;
             this.setTitle("View Account");
+            panelPasswordField.setVisible(false);
+            lblPassword.setVisible(false);
             btnSubmit.setVisible(false);
         }
         btnCancel.setText("Close");
@@ -76,15 +81,17 @@ public class AccountForm extends javax.swing.JDialog {
         txtAccountName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         txtUsername = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
-        txtPassword = new javax.swing.JPasswordField();
-        chkShowPassword = new javax.swing.JCheckBox();
+        lblPassword = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtNotes = new javax.swing.JTextArea();
         btnSubmit = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
+        panelPasswordField = new javax.swing.JPanel();
+        txtPassword = new javax.swing.JPasswordField();
+        chkShowPassword = new javax.swing.JCheckBox();
+        btnGetPassword = new javax.swing.JButton();
+        filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(1, 0), new java.awt.Dimension(1, 0), new java.awt.Dimension(1, 32767));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setLocationByPlatform(true);
@@ -93,14 +100,7 @@ public class AccountForm extends javax.swing.JDialog {
 
         jLabel2.setText("Username");
 
-        jLabel3.setText("Password");
-
-        chkShowPassword.setText("Show Password");
-        chkShowPassword.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chkShowPasswordActionPerformed(evt);
-            }
-        });
+        lblPassword.setText("Password");
 
         txtNotes.setColumns(20);
         txtNotes.setRows(5);
@@ -122,6 +122,37 @@ public class AccountForm extends javax.swing.JDialog {
 
         jLabel4.setText("Notes");
 
+        chkShowPassword.setText("Show Password");
+        chkShowPassword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkShowPasswordActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelPasswordFieldLayout = new javax.swing.GroupLayout(panelPasswordField);
+        panelPasswordField.setLayout(panelPasswordFieldLayout);
+        panelPasswordFieldLayout.setHorizontalGroup(
+            panelPasswordFieldLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelPasswordFieldLayout.createSequentialGroup()
+                .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 460, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chkShowPassword)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        panelPasswordFieldLayout.setVerticalGroup(
+            panelPasswordFieldLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelPasswordFieldLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(chkShowPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        btnGetPassword.setText("Get Password");
+        btnGetPassword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGetPasswordActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -129,28 +160,28 @@ public class AccountForm extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(btnCancel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnSubmit))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2)
-                            .addComponent(jLabel3)
+                            .addComponent(lblPassword)
                             .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtUsername, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 271, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(chkShowPassword, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(316, 316, 316))
                             .addComponent(txtAccountName)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 740, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(btnCancel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnSubmit)))
+                            .addComponent(txtUsername)
+                            .addComponent(jScrollPane1)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnGetPassword)
+                                    .addComponent(panelPasswordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 253, Short.MAX_VALUE)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(filler3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -165,23 +196,22 @@ public class AccountForm extends javax.swing.JDialog {
                     .addComponent(jLabel2)
                     .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(chkShowPassword))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(lblPassword, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(panelPasswordField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnGetPassword)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addComponent(jLabel4)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(184, 184, 184)))
+                        .addComponent(filler3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(124, 124, 124)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancel)
                     .addComponent(btnSubmit))
@@ -190,14 +220,6 @@ public class AccountForm extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void chkShowPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkShowPasswordActionPerformed
-        if (chkShowPassword.isSelected()) {
-            txtPassword.setEchoChar('\0'); // Null character unmasks password
-        } else {
-            txtPassword.setEchoChar('\u2022'); // Unicode bullet character
-        }
-    }//GEN-LAST:event_chkShowPasswordActionPerformed
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         this.dispose();
@@ -222,16 +244,42 @@ public class AccountForm extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_btnSubmitActionPerformed
 
+    private void chkShowPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkShowPasswordActionPerformed
+        if (chkShowPassword.isSelected()) {
+            txtPassword.setEchoChar('\0'); // Null character unmasks password
+        } else {
+            txtPassword.setEchoChar('\u2022'); // Unicode bullet character
+        }
+    }//GEN-LAST:event_chkShowPasswordActionPerformed
+
+    private void btnGetPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGetPasswordActionPerformed
+        try {
+            String password = this.locker.getAccountPassword(this.account.getId(), this.user.getPrivateKey());
+            txtPassword.setText(password);
+            txtPassword.setEchoChar('\0'); // Null character unmasks password
+            chkShowPassword.setSelected(true);
+        } catch (LockerRuntimeException e) {
+            JOptionPane.showMessageDialog(this, e.getCause().getMessage(),
+                    "Error Getting Password", JOptionPane.ERROR_MESSAGE);
+                return;
+        }
+        lblPassword.setVisible(true);
+        panelPasswordField.setVisible(true);
+        btnGetPassword.setVisible(false);
+    }//GEN-LAST:event_btnGetPasswordActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnGetPassword;
     private javax.swing.JButton btnSubmit;
     private javax.swing.JCheckBox chkShowPassword;
-    private javax.swing.Box.Filler filler1;
+    private javax.swing.Box.Filler filler3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblPassword;
+    private javax.swing.JPanel panelPasswordField;
     private javax.swing.JTextField txtAccountName;
     private javax.swing.JTextArea txtNotes;
     private javax.swing.JPasswordField txtPassword;
