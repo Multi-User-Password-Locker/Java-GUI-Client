@@ -6,6 +6,7 @@
 package me.camerongray.mupl.gui_client;
 
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 
 /**
  *
@@ -13,11 +14,17 @@ import javax.swing.UIManager;
  */
 public class Main {
     public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        try {           
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
         } catch (Exception e) {
             System.out.println("Could not find look and feel, falling back to default");
         }
+        
         new Login(new javax.swing.JFrame(), true).setVisible(true);
     }
 }
