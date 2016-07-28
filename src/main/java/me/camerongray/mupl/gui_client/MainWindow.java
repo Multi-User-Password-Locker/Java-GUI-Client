@@ -532,7 +532,7 @@ public class MainWindow extends javax.swing.JFrame {
             lblStatus.setText("Ready");
             try {
                 Account account = this.get();
-                new AccountForm(window, false, locker, window.user, account, user.isAdmin()).setVisible(true);
+                new AccountForm(window, false, locker, window.user, account, window.selectedFolder, user.isAdmin()).setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(window, e.getCause().getMessage(),

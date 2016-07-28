@@ -328,6 +328,36 @@ public class Locker {
         }
     }
     
+    public void updateAccount(int folderId, int accountId, String name, String username, String password, String notes) throws LockerRuntimeException {              
+        try {
+            Base64.Encoder encoder = Base64.getEncoder();
+            JSONArray accounts = new JSONArray();
+            EncryptedAccount[] encryptedAccounts = this.encryptAccount(folderId, name, username, password, notes);
+            for (EncryptedAccount account : encryptedAccounts) {
+               
+                accounts.put(new JSONObject()
+                        .put("user_id", account.getUserId())
+                        .put("password", new String(encoder.encode(account.getEncryptedPassword())))
+                        .put("account_metadata", new String(encoder.encode(account.getEncryptedMetadata())))
+                        .put("encrypted_aes_key", new String(encoder.encode(account.getEncryptedAesKey()))));
+            }
+            String payload = new JSONObject().put("folder_id", folderId)
+                    .put("encrypted_account_data", accounts).toString();
+            
+            JSONObject response = Unirest.post(this.getUrl("accounts/"+accountId)).basicAuth(this.username,
+                    this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
+                            payload).asJson().getBody().getObject();
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException(e);
+        }
+    }
+    
     private EncryptedAccount[] encryptAccount(int folderId, String name, String username, String password, String notes) throws LockerRuntimeException {
         return this.encryptAccount(folderId, name, username, password, notes, null);
     }
