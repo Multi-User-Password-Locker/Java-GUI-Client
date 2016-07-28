@@ -279,37 +279,12 @@ public class AccountForm extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
 
-    // TODO - Move into SwingWorker
-    // TODO - Avoid storing password as string?
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
-        if (this.mode == AccountForm.NEW_MODE) {
-            try {
-                this.locker.addAccount(this.folder.getId(), this.txtAccountName.getText(),
-                    this.txtUsername.getText(), new String(this.txtPassword.getPassword()), this.txtNotes.getText());
-            } catch (LockerRuntimeException e) {
-                JOptionPane.showMessageDialog(this, e.getCause().getMessage(),
-                    "Error Adding Account", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        } else if (this.mode == AccountForm.EDIT_MODE) {
-            try {
-                String password;
-                if (this.passwordChanged) {
-                    password = new String(this.txtPassword.getPassword());
-                } else {
-                    // TODO: Can be avoided once issue Resources/#1 is resolved
-                    password = this.locker.getAccountPassword(this.account.getId(), this.user.getPrivateKey());
-                }
-                this.locker.updateAccount(this.folder.getId(), this.account.getId(), this.txtAccountName.getText(),
-                    this.txtUsername.getText(), password, this.txtNotes.getText());
-            } catch (LockerRuntimeException e) {
-                JOptionPane.showMessageDialog(this, e.getCause().getMessage(),
-                    "Error Saving Account", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        }
-        this.parent.refreshFolderAccounts();
-        this.dispose();
+        String operation = (this.mode == AccountForm.NEW_MODE) ? "Adding" : "Saving";
+        lblStatus.setText(operation + " Account...");
+        lblStatus.setVisible(true);
+        pgbProgress.setVisible(true);
+        (new SubmitAccountFormTask(this)).execute();
     }//GEN-LAST:event_btnSubmitActionPerformed
 
     private void chkShowPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkShowPasswordActionPerformed
@@ -390,6 +365,50 @@ public class AccountForm extends javax.swing.JDialog {
             btnGetPassword.setVisible(false);
             btnChangePassword.setVisible(false);
             this.parent.passwordChanged = true;
+        }
+    }
+    
+    class SubmitAccountFormTask extends SwingWorker<Void, Object> {
+        public AccountForm parent;
+        
+        public SubmitAccountFormTask(AccountForm parent) {
+            this.parent = parent;
+        }
+        
+        @Override
+        public Void doInBackground() throws LockerRuntimeException {
+            if (this.parent.mode == AccountForm.NEW_MODE) {
+                this.parent.locker.addAccount(this.parent.folder.getId(), this.parent.txtAccountName.getText(),
+                    this.parent.txtUsername.getText(), new String(this.parent.txtPassword.getPassword()), this.parent.txtNotes.getText());
+            } else if (this.parent.mode == AccountForm.EDIT_MODE) {
+                String password;
+                if (this.parent.passwordChanged) {
+                    password = new String(this.parent.txtPassword.getPassword());
+                } else {
+                    // TODO: Can be avoided once issue Resources/#1 is resolved
+                    password = this.parent.locker.getAccountPassword(this.parent.account.getId(), this.parent.user.getPrivateKey());
+                }
+                this.parent.locker.updateAccount(this.parent.folder.getId(), this.parent.account.getId(), this.parent.txtAccountName.getText(),
+                    this.parent.txtUsername.getText(), password, this.parent.txtNotes.getText());
+            }
+            return null;
+        }
+        
+        @Override
+        public void done() {
+            lblStatus.setVisible(false);
+            pgbProgress.setVisible(false);
+            try {
+                this.get();
+            } catch (Exception e) {
+                String operation = (this.parent.mode == AccountForm.NEW_MODE) ? "Adding" : "Saving";
+                
+                JOptionPane.showMessageDialog(this.parent, e.getCause().getMessage(),
+                    "Error " + operation + " Account", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            this.parent.parent.refreshFolderAccounts();
+            this.parent.dispose();
         }
     }
 }
