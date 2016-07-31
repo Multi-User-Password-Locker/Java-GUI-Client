@@ -209,24 +209,45 @@ public class Locker {
             permission.put("write", p.isWrite());
             json_permissions.put(permission);
         }
-        
-        JSONObject payload = new JSONObject();
-        payload.put("permissions", json_permissions);
-        
+
         try {
-            // TODO, needs to be finished after account password retrieval is implemented!
-//            JSONArray encryptedAccounts = new JSONArray();
-//            Account[] accounts = this.getFolderAccounts(folderId, privateKey);
-//            for (Account a : accounts) {
-//                EncryptedAccount ea = this.encryptAccount(folderId, a.getName(), a.getUsername(), a.getPassword(), a.getNotes());
-//            }
-            
+            JSONObject payload = new JSONObject();
+            payload.put("permissions", json_permissions);
             JSONObject response = Unirest.post(this.getUrl("folders/" + folderId + "/permissions")).basicAuth(this.username,
                         this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
                                 payload.toString()).asJson().getBody().getObject();
             
             if (response.isNull("success")) {
                 throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            if (newReadUsers != null && newReadUsers.size() > 0) {
+                JSONArray encryptedAccounts = new JSONArray();
+                Account[] accounts = this.getFolderAccounts(folderId, privateKey);
+                for (Account a : accounts) {
+                    String password = this.getAccountPassword(a.getId(), privateKey);
+                    // TODO - encryptAccount requests all public keys for a folder every call, cache them somehow as always requesting same?
+                    EncryptedAccount[] eas = this.encryptAccount(folderId, a.getName(), a.getUsername(), password, a.getNotes(), newReadUsers);
+                    JSONArray ead = new JSONArray();
+                    for (EncryptedAccount ea : eas) {
+                        ead.put(new JSONObject()
+                                .put("user_id", ea.getUserId())
+                                .put("password", new String(Base64.getEncoder().encode(ea.getEncryptedPassword())))
+                                .put("account_metadata", new String(Base64.getEncoder().encode(ea.getEncryptedMetadata())))
+                                .put("encrypted_aes_key", new String(Base64.getEncoder().encode(ea.getEncryptedAesKey()))));
+                    }
+                    encryptedAccounts.put(new JSONObject()
+                            .put("account_id", a.getId())
+                            .put("encrypted_account_data", ead));
+                }
+                
+                response = Unirest.post(this.getUrl("accounts")).basicAuth(this.username,
+                        this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
+                                encryptedAccounts.toString()).asJson().getBody().getObject();
+            
+                if (response.isNull("success")) {
+                    throw new LockerRuntimeException(response.getString("message"));
+                }
             }
             
         } catch (LockerRuntimeException e) {
