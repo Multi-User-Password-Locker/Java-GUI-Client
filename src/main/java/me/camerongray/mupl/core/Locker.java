@@ -186,6 +186,20 @@ public class Locker {
         }
     }
     
+    public void deleteAccount(int accountId) throws LockerRuntimeException {
+        JSONObject response;
+        try {
+            response = Unirest.delete(this.getUrl("accounts/"+accountId)).basicAuth(
+                    this.username, this.auth_key).asJson().getBody().getObject();
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+        
+        if (response.isNull("success")) {
+            throw new LockerRuntimeException(response.getString("message"));
+        }
+    }
+    
     public void setFolderPermissions(int folderId, byte[] privateKey, FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerRuntimeException {
         JSONArray json_permissions = new JSONArray();
         for (FolderPermission p : permissions) {

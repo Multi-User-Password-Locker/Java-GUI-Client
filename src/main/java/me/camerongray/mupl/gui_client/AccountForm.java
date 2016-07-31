@@ -42,6 +42,7 @@ public class AccountForm extends javax.swing.JDialog {
         btnCancel.setText("Cancel");
         btnGetPassword.setVisible(false);
         btnChangePassword.setVisible(false);
+        btnDelete.setVisible(false);
         lblStatus.setVisible(false);
         pgbProgress.setVisible(false);
         this.getRootPane().setDefaultButton(btnSubmit);
@@ -66,6 +67,7 @@ public class AccountForm extends javax.swing.JDialog {
             this.setTitle("View Account");
             btnSubmit.setVisible(false);
             btnChangePassword.setVisible(false);
+            btnDelete.setVisible(false);
         }
         panelPasswordField.setVisible(false);
         lblPassword.setVisible(false);
@@ -105,6 +107,7 @@ public class AccountForm extends javax.swing.JDialog {
         lblStatus = new javax.swing.JLabel();
         pgbProgress = new javax.swing.JProgressBar();
         btnChangePassword = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setLocationByPlatform(true);
@@ -178,7 +181,7 @@ public class AccountForm extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelStatusLayout.createSequentialGroup()
                 .addComponent(lblStatus)
                 .addGap(7, 7, 7)
-                .addComponent(pgbProgress, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
+                .addComponent(pgbProgress, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
         );
         panelStatusLayout.setVerticalGroup(
             panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -194,6 +197,13 @@ public class AccountForm extends javax.swing.JDialog {
         btnChangePassword.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnChangePasswordActionPerformed(evt);
+            }
+        });
+
+        btnDelete.setText("Delete Account");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
             }
         });
 
@@ -232,6 +242,8 @@ public class AccountForm extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnDelete)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSubmit)))
                 .addContainerGap())
         );
@@ -265,7 +277,8 @@ public class AccountForm extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(btnSubmit)
-                        .addComponent(btnCancel))
+                        .addComponent(btnCancel)
+                        .addComponent(btnDelete))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -310,9 +323,23 @@ public class AccountForm extends javax.swing.JDialog {
         this.passwordChanged = true;
     }//GEN-LAST:event_btnChangePasswordActionPerformed
 
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure that you "+
+                "want to delete \""+this.account.getName()+"\"?", "Delete Account",
+                JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.NO_OPTION) {
+            return;
+        }
+        lblStatus.setText("Deleting Account...");
+        lblStatus.setVisible(true);
+        pgbProgress.setVisible(true);
+        (new DeleteAccountTask(this)).execute();
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnChangePassword;
+    private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnGetPassword;
     private javax.swing.JButton btnSubmit;
     private javax.swing.JCheckBox chkShowPassword;
@@ -409,6 +436,35 @@ public class AccountForm extends javax.swing.JDialog {
             }
             this.parent.parent.refreshFolderAccounts();
             this.parent.dispose();
+        }
+    }
+    
+    class DeleteAccountTask extends SwingWorker<Void, Object> {
+        private AccountForm parent;
+        
+        public DeleteAccountTask(AccountForm parent) {
+            this.parent = parent;
+        }
+        
+        @Override
+        public Void doInBackground() throws LockerRuntimeException {
+            this.parent.locker.deleteAccount(this.parent.account.getId());
+            return null;
+        }
+        
+        @Override
+        public void done() {
+            lblStatus.setVisible(false);
+            pgbProgress.setVisible(false);
+            try {
+                get();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this.parent, e.getCause().getMessage(),
+                    "Error Deleting Account", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            this.parent.dispose();
+            this.parent.parent.refreshFolderAccounts();
         }
     }
 }
