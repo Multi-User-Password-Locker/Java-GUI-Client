@@ -5,6 +5,7 @@
  */
 package me.camerongray.mupl.gui_client;
 
+import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import me.camerongray.mupl.core.*;
@@ -14,6 +15,7 @@ import me.camerongray.mupl.core.*;
  * @author camerong
  */
 public class Login extends javax.swing.JDialog {
+    private Preferences preferences;
 
     /**
      * Creates new form Login
@@ -22,6 +24,22 @@ public class Login extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.getRootPane().setDefaultButton(btnLogin);
+        this.preferences = Preferences.userNodeForPackage(this.getClass());
+        
+        txtUsername.setText(preferences.get("login_username", ""));
+        txtHostname.setText(preferences.get("login_hostname", ""));
+        txtPort.setText(Integer.toString(preferences.getInt("login_port", 5000)));
+        chkRememberServer.setSelected(preferences.getBoolean("login_rememberServer", true));
+        chkRememberUser.setSelected(preferences.getBoolean("login_rememberUser", true));
+        
+        txtHostname.requestFocus();
+        if (preferences.getBoolean("login_rememberServer", true)) {
+            txtUsername.requestFocus();
+        }
+        if (preferences.getBoolean("login_rememberUser", true)) {
+            txtPassword.requestFocus();
+        }
+        
         panelLoggingIn.setVisible(false);
     }
 
@@ -47,6 +65,8 @@ public class Login extends javax.swing.JDialog {
         panelLoggingIn = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jProgressBar1 = new javax.swing.JProgressBar();
+        chkRememberUser = new javax.swing.JCheckBox();
+        chkRememberServer = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Login");
@@ -57,20 +77,13 @@ public class Login extends javax.swing.JDialog {
 
         jLabel1.setText("Server Hostname/IP");
 
-        txtHostname.setText("127.0.0.1");
-
         jLabel2.setText("Port");
-
-        txtPort.setText("5000");
 
         jLabel3.setText("Username");
 
-        txtUsername.setText("camerongray");
         txtUsername.setToolTipText("");
 
         jLabel4.setText("Password");
-
-        txtPassword.setText("password");
 
         btnLogin.setText("Login");
         btnLogin.addActionListener(new java.awt.event.ActionListener() {
@@ -105,6 +118,10 @@ public class Login extends javax.swing.JDialog {
             .addComponent(jLabel5)
         );
 
+        chkRememberUser.setText("Remember Username");
+
+        chkRememberServer.setText("Remember Server");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -112,28 +129,34 @@ public class Login extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtHostname, javax.swing.GroupLayout.PREFERRED_SIZE, 283, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtPort, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtUsername)
-                            .addComponent(txtPassword)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(btnExit)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(panelLoggingIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(120, 120, 120)
-                        .addComponent(btnLogin)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnLogin))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtUsername)
+                                    .addComponent(txtPassword)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtHostname, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtPort, javax.swing.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(chkRememberServer)
+                            .addComponent(chkRememberUser))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -144,16 +167,18 @@ public class Login extends javax.swing.JDialog {
                     .addComponent(jLabel1)
                     .addComponent(txtHostname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2)
-                    .addComponent(txtPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                    .addComponent(txtPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(chkRememberServer))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(chkRememberUser))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -202,6 +227,8 @@ public class Login extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnLogin;
+    private javax.swing.JCheckBox chkRememberServer;
+    private javax.swing.JCheckBox chkRememberUser;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -217,13 +244,13 @@ public class Login extends javax.swing.JDialog {
 
 
     class LoginTask extends SwingWorker<LoginTaskResult, Object> {
-        private javax.swing.JDialog dialog;
+        private Login dialog;
         private String hostname;
         private int port;
         private String username;
         private String password;
 
-        public LoginTask(javax.swing.JDialog dialog, String hostname, int port, String username, String password) {
+        public LoginTask(Login dialog, String hostname, int port, String username, String password) {
             this.dialog = dialog;
             this.hostname = hostname;
             this.port = port;
@@ -236,6 +263,24 @@ public class Login extends javax.swing.JDialog {
             Locker locker = new Locker(hostname, port, username, password);
 
             if (locker.checkAuth()) {
+                if (this.dialog.chkRememberUser.isSelected()) {
+                    this.dialog.preferences.put("login_username", username);
+                    this.dialog.preferences.putBoolean("login_rememberUser", true);
+                } else {
+                    this.dialog.preferences.remove("login_username");
+                    this.dialog.preferences.putBoolean("login_rememberUser", false);
+                }
+                
+                if (this.dialog.chkRememberServer.isSelected()) {
+                    this.dialog.preferences.put("login_hostname", hostname);
+                    this.dialog.preferences.putInt("login_port", port);
+                    this.dialog.preferences.putBoolean("login_rememberServer", true);
+                } else {
+                    this.dialog.preferences.remove("login_hostname");
+                    this.dialog.preferences.remove("login_port");
+                    this.dialog.preferences.putBoolean("login_rememberServer", false);
+                }
+                
                 return new LoginTaskResult(locker.getCurrentUser(), locker);
             } else {
                 throw new LockerSecurityException("Incorrect Username/Password, Please try again!");

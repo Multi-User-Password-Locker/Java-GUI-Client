@@ -8,6 +8,7 @@
     <Property name="location" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
       <Point value="[0, 0]"/>
     </Property>
+    <Property name="locationByPlatform" type="boolean" value="true"/>
     <Property name="name" type="java.lang.String" value="dialogLogin" noResource="true"/>
   </Properties>
   <SyntheticProperties>
@@ -32,32 +33,41 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="jLabel1" min="-2" pref="150" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="txtHostname" min="-2" pref="283" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="txtPort" pref="113" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="jLabel3" pref="81" max="32767" attributes="0"/>
-                          <Component id="jLabel4" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtUsername" max="32767" attributes="0"/>
-                          <Component id="txtPassword" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="btnExit" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="panelLoggingIn" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="120" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="btnLogin" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="jLabel3" pref="81" max="32767" attributes="0"/>
+                                  <Component id="jLabel4" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="txtUsername" max="32767" attributes="0"/>
+                                  <Component id="txtPassword" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel1" min="-2" pref="150" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="txtHostname" min="-2" pref="245" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="txtPort" pref="58" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="chkRememberServer" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkRememberUser" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -73,18 +83,20 @@
                   <Component id="txtHostname" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtPort" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="chkRememberServer" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtUsername" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="chkRememberUser" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtPassword" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="22" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -109,9 +121,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtHostname">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="127.0.0.1"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
@@ -119,9 +128,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtPort">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="5000"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
@@ -130,7 +136,6 @@
     </Component>
     <Component class="javax.swing.JTextField" name="txtUsername">
       <Properties>
-        <Property name="text" type="java.lang.String" value="camerongray"/>
         <Property name="toolTipText" type="java.lang.String" value=""/>
       </Properties>
     </Component>
@@ -140,9 +145,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JPasswordField" name="txtPassword">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="password"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="btnLogin">
       <Properties>
@@ -192,5 +194,15 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JCheckBox" name="chkRememberUser">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Remember Username"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="chkRememberServer">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Remember Server"/>
+      </Properties>
+    </Component>
   </SubComponents>
 </Form>
