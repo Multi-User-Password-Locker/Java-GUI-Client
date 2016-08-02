@@ -304,7 +304,10 @@ public class AccountForm extends javax.swing.JDialog {
         if (chkShowPassword.isSelected()) {
             txtPassword.setEchoChar('\0'); // Null character unmasks password
         } else {
-            txtPassword.setEchoChar('\u2022'); // Unicode bullet character
+            // The mask character used varies based on Look and Feel so we get
+            // the character by creating a new password field
+            char maskChar = (new javax.swing.JPasswordField()).getEchoChar();
+            txtPassword.setEchoChar(maskChar);
         }
     }//GEN-LAST:event_chkShowPasswordActionPerformed
 
