@@ -25,6 +25,6 @@ public class Main {
             System.out.println("Could not find look and feel, falling back to default");
         }
         
-        new Login(new javax.swing.JFrame(), true).setVisible(true);
+        new Login().setVisible(true);
     }
 }

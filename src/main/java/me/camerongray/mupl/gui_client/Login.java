@@ -6,27 +6,26 @@
 package me.camerongray.mupl.gui_client;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
-import me.camerongray.mupl.core.*;
+import me.camerongray.mupl.core.Locker;
+import me.camerongray.mupl.core.LockerSecurityException;
+import me.camerongray.mupl.core.User;
 
 /**
  *
  * @author camerong
  */
-public class Login extends javax.swing.JDialog {
+public class Login extends javax.swing.JFrame {
     private Preferences preferences;
 
     /**
-     * Creates new form Login
+     * Creates new form LoginFrame
      */
-    public Login(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
+    public Login() {
         initComponents();
         this.getRootPane().setDefaultButton(btnLogin);
         this.preferences = Preferences.userNodeForPackage(this.getClass());
@@ -81,12 +80,8 @@ public class Login extends javax.swing.JDialog {
         chkRememberUser = new javax.swing.JCheckBox();
         chkRememberServer = new javax.swing.JCheckBox();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Login");
-        setAlwaysOnTop(true);
-        setLocation(new java.awt.Point(0, 0));
-        setLocationByPlatform(true);
-        setName("dialogLogin"); // NOI18N
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Login - Multi-User Password Locker");
 
         lblLogo.setText("LOGO");
 
@@ -212,19 +207,15 @@ public class Login extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
-        System.exit(0);
-    }//GEN-LAST:event_btnExitActionPerformed
-
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         String hostname = txtHostname.getText();
-        
+
         int port;
         try {
-            port = Integer.parseInt(txtPort.getText()); 
+            port = Integer.parseInt(txtPort.getText());
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Port must be a number",
-                        "Input Error", JOptionPane.INFORMATION_MESSAGE);
+                "Input Error", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
@@ -232,16 +223,55 @@ public class Login extends javax.swing.JDialog {
         String password = txtPassword.getText();
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                        "You must enter a username and password",
-                        "Login Error", JOptionPane.INFORMATION_MESSAGE);
+                "You must enter a username and password",
+                "Login Error", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        
+
         panelLoggingIn.setVisible(true);
         btnLogin.setEnabled(false);
         new LoginTask(this, hostname, port, username, password).execute();
     }//GEN-LAST:event_btnLoginActionPerformed
 
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_btnExitActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Login().setVisible(true);
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnExit;
@@ -261,8 +291,6 @@ public class Login extends javax.swing.JDialog {
     private javax.swing.JTextField txtPort;
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
-
-
     class LoginTask extends SwingWorker<LoginTaskResult, Object> {
         private Login dialog;
         private String hostname;

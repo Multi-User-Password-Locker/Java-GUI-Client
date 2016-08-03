@@ -307,7 +307,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void menuLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuLogoutActionPerformed
         this.dispose();
-        new Login(new javax.swing.JFrame(), true).setVisible(true);
+        new Login().setVisible(true);
     }//GEN-LAST:event_menuLogoutActionPerformed
 
     private void lstFoldersValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_lstFoldersValueChanged
