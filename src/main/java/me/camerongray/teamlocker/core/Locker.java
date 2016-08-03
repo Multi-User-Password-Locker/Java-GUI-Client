@@ -1,4 +1,4 @@
-package me.camerongray.mupl.core;
+package me.camerongray.teamlocker.core;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;

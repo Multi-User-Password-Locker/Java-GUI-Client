@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package me.camerongray.mupl.gui_client;
+package me.camerongray.teamlocker.gui_client;
 
 import java.io.IOException;
 import java.util.prefs.Preferences;
@@ -11,9 +11,9 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
-import me.camerongray.mupl.core.Locker;
-import me.camerongray.mupl.core.LockerSecurityException;
-import me.camerongray.mupl.core.User;
+import me.camerongray.teamlocker.core.Locker;
+import me.camerongray.teamlocker.core.LockerSecurityException;
+import me.camerongray.teamlocker.core.User;
 
 /**
  *
@@ -81,7 +81,7 @@ public class Login extends javax.swing.JFrame {
         chkRememberServer = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Login - Multi-User Password Locker");
+        setTitle("Login - TeamLocker");
 
         lblLogo.setText("LOGO");
 

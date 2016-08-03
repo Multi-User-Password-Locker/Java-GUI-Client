@@ -3,13 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package me.camerongray.mupl.gui_client;
+package me.camerongray.teamlocker.gui_client;
 
+import me.camerongray.teamlocker.core.User;
+import me.camerongray.teamlocker.core.Folder;
+import me.camerongray.teamlocker.core.LockerRuntimeException;
+import me.camerongray.teamlocker.core.Account;
+import me.camerongray.teamlocker.core.Locker;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
-import me.camerongray.mupl.core.*;
 
 /**
  *
@@ -37,7 +41,7 @@ public class AccountForm extends javax.swing.JDialog {
         this.folder = folder;
         this.parent = parent;
         this.mode = AccountForm.NEW_MODE;
-        this.setTitle("New Account");
+        this.setTitle("New Account - TeamLocker");
         btnSubmit.setText("Add Account");
         btnCancel.setText("Cancel");
         btnGetPassword.setVisible(false);
@@ -59,12 +63,12 @@ public class AccountForm extends javax.swing.JDialog {
         this.folder = folder;
         if (canEdit) {
             this.mode = AccountForm.EDIT_MODE;
-            this.setTitle("View/Edit Account");
+            this.setTitle("View/Edit Account - TeamLocker");
             btnSubmit.setText("Save Account");
             this.getRootPane().setDefaultButton(btnSubmit);
         } else {
             this.mode = AccountForm.VIEW_MODE;
-            this.setTitle("View Account");
+            this.setTitle("View Account - TeamLocker");
             btnSubmit.setVisible(false);
             btnChangePassword.setVisible(false);
             btnDelete.setVisible(false);

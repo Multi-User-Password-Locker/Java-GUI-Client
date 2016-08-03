@@ -3,8 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package me.camerongray.mupl.gui_client;
+package me.camerongray.teamlocker.gui_client;
 
+import me.camerongray.teamlocker.core.Folder;
+import me.camerongray.teamlocker.core.User;
+import me.camerongray.teamlocker.core.LockerRuntimeException;
+import me.camerongray.teamlocker.core.Account;
+import me.camerongray.teamlocker.core.Locker;
+import me.camerongray.teamlocker.core.FolderPermission;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -16,7 +22,6 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
-import me.camerongray.mupl.core.*;
 
 /**
  *
@@ -115,7 +120,7 @@ public class MainWindow extends javax.swing.JFrame {
         menuRefreshFolders = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Multi-User Password Locker");
+        setTitle("TeamLocker");
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 

@@ -3,47 +3,39 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package me.camerongray.mupl.core;
+package me.camerongray.teamlocker.core;
 
 /**
  *
  * @author camerong
  */
-public class Folder {
-    private int id;
-    private String name;
+public class FolderPermission {
+    private User user;
+    private Folder folder;
     private boolean read;
     private boolean write;
 
-    public Folder(int id, String name, boolean read, boolean write) {
-        this.id = id;
-        this.name = name;
+    public FolderPermission(User user, Folder folder, boolean read, boolean write) {
+        this.user = user;
+        this.folder = folder;
         this.read = read;
         this.write = write;
     }
-    
-    public Folder(int id, String name) {
-        this.id = id;
-        this.name = name;
 
-    }
-    
-    public Folder() {}
-
-    public int getId() {
-        return id;
+    public User getUser() {
+        return user;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public String getName() {
-        return name;
+    public Folder getFolder() {
+        return folder;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFolder(Folder folder) {
+        this.folder = folder;
     }
 
     public boolean isRead() {
@@ -61,8 +53,6 @@ public class Folder {
     public void setWrite(boolean write) {
         this.write = write;
     }
-
-    public String toString() {
-        return this.name;
-    }
+    
+    
 }

@@ -4,7 +4,7 @@ version '1.0-SNAPSHOT'
 apply plugin: 'java'
 
 apply plugin: 'application'
-mainClassName = 'me.camerongray.mupl.gui_client.Main'
+mainClassName = 'me.camerongray.teamlocker.gui_client.Main'
 
 sourceCompatibility = 1.8
 
@@ -26,9 +26,9 @@ dependencies {
 
 task fatJar(type: Jar) {
 	manifest {
-        attributes 'Implementation-Title': 'Multi-User Password Locker',  
+        attributes 'Implementation-Title': 'TeamLocker',  
         	'Implementation-Version': version,
-        	'Main-Class': 'me.camerongray.mupl.gui_client.Login'
+        	'Main-Class': 'me.camerongray.teamlocker.gui_client.Login'
     }
     baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }

@@ -1,4 +1,4 @@
-package me.camerongray.mupl.gui_client;
+package me.camerongray.teamlocker.gui_client;
 
 
 // TODO: CONFIRM CODE IS PUBLIC DOMAIN!

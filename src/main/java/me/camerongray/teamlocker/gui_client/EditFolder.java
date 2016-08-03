@@ -3,14 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package me.camerongray.mupl.gui_client;
+package me.camerongray.teamlocker.gui_client;
+import me.camerongray.teamlocker.core.User;
+import me.camerongray.teamlocker.core.Folder;
+import me.camerongray.teamlocker.core.Locker;
+import me.camerongray.teamlocker.core.FolderPermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
-import me.camerongray.mupl.core.*;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
@@ -85,7 +88,7 @@ public class EditFolder extends javax.swing.JDialog {
         jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Edit Folder");
+        setTitle("Edit Folder - TeamLocker");
         setLocationByPlatform(true);
 
         jLabel1.setText("Folder Name");

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package me.camerongray.mupl.gui_client;
+package me.camerongray.teamlocker.gui_client;
 
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;

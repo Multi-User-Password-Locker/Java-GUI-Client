@@ -1,4 +1,4 @@
-package me.camerongray.mupl.core;
+package me.camerongray.teamlocker.core;
 
 /**
  * Created by camerong on 09/07/16.
