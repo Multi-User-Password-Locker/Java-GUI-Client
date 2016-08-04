@@ -102,10 +102,10 @@ public class MainWindow extends javax.swing.JFrame {
         lblAdministratorFlag = new javax.swing.JLabel();
         button1 = new java.awt.Button();
         jSplitPane1 = new javax.swing.JSplitPane();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        tblAccounts = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstFolders = new javax.swing.JList<>();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tblAccounts = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         menuLogout = new javax.swing.JMenuItem();
@@ -117,6 +117,8 @@ public class MainWindow extends javax.swing.JFrame {
         menuEditFolder = new javax.swing.JMenuItem();
         menuDeleteFolder = new javax.swing.JMenuItem();
         sepRefresh = new javax.swing.JPopupMenu.Separator();
+        menuChangePassword = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
         menuRefreshFolders = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -168,6 +170,16 @@ public class MainWindow extends javax.swing.JFrame {
 
         button1.setLabel("button1");
 
+        lstFolders.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        lstFolders.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                lstFoldersValueChanged(evt);
+            }
+        });
+        jScrollPane1.setViewportView(lstFolders);
+
+        jSplitPane1.setLeftComponent(jScrollPane1);
+
         tblAccounts.setAutoCreateRowSorter(true);
         tblAccounts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -203,16 +215,6 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         jSplitPane1.setRightComponent(jScrollPane2);
-
-        lstFolders.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        lstFolders.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                lstFoldersValueChanged(evt);
-            }
-        });
-        jScrollPane1.setViewportView(lstFolders);
-
-        jSplitPane1.setLeftComponent(jScrollPane1);
 
         jMenu1.setText("File");
 
@@ -270,6 +272,15 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu2.add(menuDeleteFolder);
         jMenu2.add(sepRefresh);
+
+        menuChangePassword.setText("Change Password...");
+        menuChangePassword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuChangePasswordActionPerformed(evt);
+            }
+        });
+        jMenu2.add(menuChangePassword);
+        jMenu2.add(jSeparator1);
 
         menuRefreshFolders.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F5, 0));
         menuRefreshFolders.setText("Refresh Folders");
@@ -412,6 +423,10 @@ public class MainWindow extends javax.swing.JFrame {
         new AccountForm(this, true, this.locker, this.selectedFolder).setVisible(true);
     }//GEN-LAST:event_menuNewAccountActionPerformed
 
+    private void menuChangePasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuChangePasswordActionPerformed
+        (new ChangePassword(this, true, this.locker, this.user)).setVisible(true);
+    }//GEN-LAST:event_menuChangePasswordActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button button1;
     private javax.swing.JLabel jLabel1;
@@ -421,11 +436,13 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JLabel lblAdministratorFlag;
     private javax.swing.JLabel lblStatus;
     private javax.swing.JLabel lblUser;
     private javax.swing.JList<String> lstFolders;
+    private javax.swing.JMenuItem menuChangePassword;
     private javax.swing.JMenuItem menuDeleteFolder;
     private javax.swing.JMenuItem menuEditFolder;
     private javax.swing.JMenuItem menuExit;

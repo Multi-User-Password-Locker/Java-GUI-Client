@@ -470,6 +470,38 @@ public class Locker {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }
     }
+    
+    private EncryptedAesKey[] getEncryptedAesKeys() throws LockerRuntimeException {
+        try {
+            JSONObject response = Unirest.get(this.getUrl("users/self/encrypted_aes_keys"))
+                    .basicAuth(this.username, this.auth_key).asJson().getBody().getObject();            
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            ArrayList<EncryptedAesKey> keys = new ArrayList<>();
+            JSONArray items = response.getJSONArray("encrypted_aes_keys");
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject item = items.getJSONObject(i);
+                byte[] key = Base64.getDecoder().decode(item.getString("encrypted_aes_key"));
+                keys.add(new EncryptedAesKey(item.getInt("account_id"), key));
+            }
+            
+            return keys.toArray(new EncryptedAesKey[keys.size()]);
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    public void changePassword(String oldPassword, String newPassword)  throws LockerRuntimeException {
+        EncryptedAesKey[] keys = this.getEncryptedAesKeys();
+        for (EncryptedAesKey key : keys) {
+            System.out.println(key.getAccountId() + " - " + Base64.getEncoder().encodeToString(key.getEncryptedAesKey()));
+        }
+    }
 }
 
 class EncryptedAccount {
@@ -541,5 +573,31 @@ class PublicKey {
 
     public void setKey(byte[] key) {
         this.key = key;
+    }
+}
+
+class EncryptedAesKey {
+    private int accountId;
+    private byte[] encryptedAesKey;
+
+    public EncryptedAesKey(int accountId, byte[] encryptedAesKey) {
+        this.accountId = accountId;
+        this.encryptedAesKey = encryptedAesKey;
+    }
+
+    public int getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(int accountId) {
+        this.accountId = accountId;
+    }
+
+    public byte[] getEncryptedAesKey() {
+        return encryptedAesKey;
+    }
+
+    public void setEncryptedAesKey(byte[] encryptedAesKey) {
+        this.encryptedAesKey = encryptedAesKey;
     }
 }
