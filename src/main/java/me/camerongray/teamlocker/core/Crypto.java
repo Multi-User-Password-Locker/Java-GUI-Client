@@ -69,16 +69,7 @@ public class Crypto {
     }
     
     public static byte[] aesDecrypt(String password, byte[] salt, byte[] iv, byte[] encryptedData) throws CryptoException {
-        SecretKey key;
-        try{
-            final int ITERATION_COUNT = 1000;
-            final int KEY_LENGTH = 256;
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGTH);
-            key = new SecretKeySpec(skf.generateSecret(spec).getEncoded(), "AES");
-        } catch (Exception e) {
-            throw new CryptoException(e);
-        }
+        SecretKey key = Crypto.keyFromPassword(password, salt);
         return Crypto.aesDecrypt(key, iv, encryptedData);
     }
     
@@ -88,7 +79,7 @@ public class Crypto {
     
     public static byte[] aesEncrypt(AesKey key, byte[] data) throws CryptoException {
         return aesEncrypt(new SecretKeySpec(key.getKey(), "AES"), key.getIv(), data);
-    }
+    }    
     
     public static byte[] aesEncrypt(SecretKey key, byte[] iv, byte[] data) throws CryptoException {
         try {
@@ -98,6 +89,37 @@ public class Crypto {
         } catch (Exception e) {
             throw new CryptoException(e);
         }
+    }
+    
+    public static SecretKey keyFromPassword(String password, byte[] salt) throws CryptoException {
+        final int ITERATION_COUNT = 1000;
+        final int KEY_LENGTH = 256;
+       
+        try{
+            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGTH);
+            SecretKey key = new SecretKeySpec(skf.generateSecret(spec).getEncoded(), "AES");
+            return key;
+        } catch (Exception e) {
+            throw new CryptoException(e);
+        }
+    }
+    
+        
+    public static EncryptedPrivateKey encryptPrivateKey(String password, byte[] privateKey) throws CryptoException {
+        final int IV_BYTES = 16;
+        final int SALT_BYTES = 8;
+        
+        SecureRandom random = new SecureRandom();
+        byte[] iv = new byte[IV_BYTES];
+        byte[] salt = new byte[SALT_BYTES];
+        random.nextBytes(iv);
+        random.nextBytes(salt);
+        
+        SecretKey key = keyFromPassword(password, salt);
+        byte[] encryptedPrivateKey = aesEncrypt(key, iv, privateKey);
+        
+        return new EncryptedPrivateKey(encryptedPrivateKey, iv, salt);
     }
     
     public static PublicKeyEncrypted rsaEncryptWithPublicKey(byte[] publicKey, byte[] data) throws CryptoException {
@@ -205,6 +227,42 @@ public class Crypto {
 
         public void setEncryptedData(byte[] encryptedData) {
             this.encryptedData = encryptedData;
+        }
+    }
+    
+    public static class EncryptedPrivateKey {
+        private byte[] key;
+        private byte[] iv;
+        private byte[] salt;
+
+        public EncryptedPrivateKey(byte[] key, byte[] iv, byte[] salt) {
+            this.key = key;
+            this.iv = iv;
+            this.salt = salt;
+        }
+
+        public byte[] getKey() {
+            return key;
+        }
+
+        public void setKey(byte[] key) {
+            this.key = key;
+        }
+
+        public byte[] getIv() {
+            return iv;
+        }
+
+        public void setIv(byte[] iv) {
+            this.iv = iv;
+        }
+
+        public byte[] getSalt() {
+            return salt;
+        }
+
+        public void setSalt(byte[] salt) {
+            this.salt = salt;
         }
     }
 }

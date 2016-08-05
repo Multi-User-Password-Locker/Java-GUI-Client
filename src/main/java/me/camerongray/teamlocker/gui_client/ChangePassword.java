@@ -5,8 +5,11 @@
  */
 package me.camerongray.teamlocker.gui_client;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
 import me.camerongray.teamlocker.core.User;
@@ -18,15 +21,18 @@ import me.camerongray.teamlocker.core.User;
 public class ChangePassword extends javax.swing.JDialog {
     private Locker locker;
     private User user;
+    private MainWindow parent;
     
     /**
      * Creates new form ChangePassword
      */
-    public ChangePassword(java.awt.Frame parent, boolean modal, Locker locker, User user) {
+    public ChangePassword(MainWindow parent, boolean modal, Locker locker, User user) {
         super(parent, modal);
         initComponents();
         this.locker = locker;
         this.user = user;
+        this.parent = parent;
+        this.getRootPane().setDefaultButton(btnChangePassword);
         this.populateUi();
     }
     
@@ -46,8 +52,6 @@ public class ChangePassword extends javax.swing.JDialog {
 
         jLabel1 = new javax.swing.JLabel();
         lblUsername = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        txtOldPassword = new javax.swing.JPasswordField();
         jLabel3 = new javax.swing.JLabel();
         txtNewPassword = new javax.swing.JPasswordField();
         jLabel4 = new javax.swing.JLabel();
@@ -65,8 +69,6 @@ public class ChangePassword extends javax.swing.JDialog {
         jLabel1.setText("Changing password for user: ");
 
         lblUsername.setText("USERNAME");
-
-        jLabel2.setText("Old Password:");
 
         jLabel3.setText("New Password:");
 
@@ -131,11 +133,9 @@ public class ChangePassword extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel4)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING))
+                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtOldPassword)
                             .addComponent(txtNewPassword)
                             .addComponent(txtConfirmNewPassword))))
                 .addContainerGap())
@@ -148,10 +148,6 @@ public class ChangePassword extends javax.swing.JDialog {
                     .addComponent(jLabel1)
                     .addComponent(lblUsername))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(txtOldPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(txtNewPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -176,22 +172,19 @@ public class ChangePassword extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnChangePasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangePasswordActionPerformed
-        try {
-            // TODO: Move into SwingWorker
-            // TODO: Check passwords match
-            // TODO: Check provided old password is correct
-            // TODO: Log user out on complete - Warn about this before saving!
-            this.locker.changePassword(new String(this.txtOldPassword.getPassword()), new String(this.txtNewPassword.getPassword()));
-        } catch (LockerRuntimeException ex) {
-            Logger.getLogger(ChangePassword.class.getName()).log(Level.SEVERE, null, ex);
+        if (!Arrays.equals(this.txtNewPassword.getPassword(), this.txtConfirmNewPassword.getPassword())) {
+            JOptionPane.showMessageDialog(this, "Passwords do not match!",
+                        "Error Changing Password", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+        this.panelStatus.setVisible(true);
+        (new ChangePasswordTask(this, this.locker, this.user, new String(this.txtNewPassword.getPassword()))).execute();
     }//GEN-LAST:event_btnChangePasswordActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnChangePassword;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -200,6 +193,43 @@ public class ChangePassword extends javax.swing.JDialog {
     private javax.swing.JPanel panelStatus;
     private javax.swing.JPasswordField txtConfirmNewPassword;
     private javax.swing.JPasswordField txtNewPassword;
-    private javax.swing.JPasswordField txtOldPassword;
     // End of variables declaration//GEN-END:variables
+    
+    class ChangePasswordTask extends SwingWorker<Void, Object> {
+        ChangePassword dialog;
+        String newPassword;
+        User user;
+        Locker locker;
+
+        public ChangePasswordTask(ChangePassword dialog, Locker locker, User user, String newPassword) {
+            this.dialog = dialog;
+            this.newPassword = newPassword;
+            this.user = user;
+            this.locker = locker;
+        }
+        
+        @Override
+        public Void doInBackground() throws LockerRuntimeException {
+            this.locker.changeOwnPassword(this.user, this.newPassword);
+            return null;
+        }
+        
+        @Override
+        public void done() {
+            this.dialog.panelStatus.setVisible(false);
+            try {
+                get();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this.dialog, e.getMessage(),
+                            "Error Changing Password", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            JOptionPane.showMessageDialog(this.dialog, "Password updated successfully!  You will now be logged out.",
+                            "Password Updated", JOptionPane.INFORMATION_MESSAGE);
+            // Logout
+            this.dialog.dispose();
+            this.dialog.parent.dispose();
+            new Login().setVisible(true);
+        }
+    }
 }
