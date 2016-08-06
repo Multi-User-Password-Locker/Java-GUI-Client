@@ -120,6 +120,10 @@ public class MainWindow extends javax.swing.JFrame {
         menuChangePassword = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         menuRefreshFolders = new javax.swing.JMenuItem();
+        mnuUsers = new javax.swing.JMenu();
+        menuNewUser = new javax.swing.JMenuItem();
+        menuEditUser = new javax.swing.JMenuItem();
+        menuDeleteUser = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("TeamLocker");
@@ -293,6 +297,24 @@ public class MainWindow extends javax.swing.JFrame {
 
         jMenuBar1.add(jMenu2);
 
+        mnuUsers.setText("Users");
+
+        menuNewUser.setText("New User");
+        menuNewUser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuNewUserActionPerformed(evt);
+            }
+        });
+        mnuUsers.add(menuNewUser);
+
+        menuEditUser.setText("Edit User");
+        mnuUsers.add(menuEditUser);
+
+        menuDeleteUser.setText("Delete User");
+        mnuUsers.add(menuDeleteUser);
+
+        jMenuBar1.add(mnuUsers);
+
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -427,6 +449,10 @@ public class MainWindow extends javax.swing.JFrame {
         (new ChangePassword(this, true, this.locker, this.user)).setVisible(true);
     }//GEN-LAST:event_menuChangePasswordActionPerformed
 
+    private void menuNewUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNewUserActionPerformed
+        (new UserForm(this, true, UserForm.NEW_MODE)).setVisible(true);
+    }//GEN-LAST:event_menuNewUserActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button button1;
     private javax.swing.JLabel jLabel1;
@@ -444,12 +470,16 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JList<String> lstFolders;
     private javax.swing.JMenuItem menuChangePassword;
     private javax.swing.JMenuItem menuDeleteFolder;
+    private javax.swing.JMenuItem menuDeleteUser;
     private javax.swing.JMenuItem menuEditFolder;
+    private javax.swing.JMenuItem menuEditUser;
     private javax.swing.JMenuItem menuExit;
     private javax.swing.JMenuItem menuLogout;
     private javax.swing.JMenuItem menuNewAccount;
     private javax.swing.JMenuItem menuNewFolder;
+    private javax.swing.JMenuItem menuNewUser;
     private javax.swing.JMenuItem menuRefreshFolders;
+    private javax.swing.JMenu mnuUsers;
     private javax.swing.JProgressBar pgbStatus;
     private javax.swing.JPopupMenu.Separator sepFolder;
     private javax.swing.JPopupMenu.Separator sepRefresh;
