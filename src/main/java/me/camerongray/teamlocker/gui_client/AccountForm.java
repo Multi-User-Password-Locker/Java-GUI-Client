@@ -53,7 +53,7 @@ public class AccountForm extends javax.swing.JDialog {
     }
     
     // Show form for viewing/editing an existing account
-    public AccountForm(MainWindow parent, boolean modal, Locker locker, User user, Account account, Folder folder, boolean canEdit) {
+    public AccountForm(MainWindow parent, boolean modal, Locker locker, User user, Account account, Folder folder) {
         super(parent, modal);
         initComponents();
         this.locker = locker;
@@ -61,7 +61,7 @@ public class AccountForm extends javax.swing.JDialog {
         this.account = account;
         this.user = user;
         this.folder = folder;
-        if (canEdit) {
+        if (folder.isWrite()) {
             this.mode = AccountForm.EDIT_MODE;
             this.setTitle("View/Edit Account - TeamLocker");
             btnSubmit.setText("Save Account");

@@ -577,7 +577,7 @@ public class MainWindow extends javax.swing.JFrame {
                 int rowNum = 0;
                 for (Account account : accounts) {    
                     model.addRow(new Object[]{account.getName(), account.getUsername(), account.getNotes(),
-                        (this.window.user.isAdmin()) ? "View/Edit" : "View"});
+                        (this.window.selectedFolder.isWrite()) ? "View/Edit" : "View"});
                     this.window.rowAccountIds.put(rowNum, account.getId());
                     rowNum++;
                 }
@@ -610,7 +610,7 @@ public class MainWindow extends javax.swing.JFrame {
             lblStatus.setText("Ready");
             try {
                 Account account = this.get();
-                new AccountForm(window, false, locker, window.user, account, window.selectedFolder, user.isAdmin()).setVisible(true);
+                new AccountForm(window, false, locker, window.user, account, window.selectedFolder).setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(window, e.getCause().getMessage(),
