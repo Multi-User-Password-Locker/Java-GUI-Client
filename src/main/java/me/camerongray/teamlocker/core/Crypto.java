@@ -7,6 +7,8 @@ package me.camerongray.teamlocker.core;
 
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.interfaces.RSAPublicKey;
@@ -162,6 +164,34 @@ public class Crypto {
             
             byte[] encryptedAesKey = rsaCipher.doFinal(aesKeyUnencrypted);
             return encryptedAesKey;
+        } catch (Exception e) {
+            throw new CryptoException(e);
+        }
+    }
+    
+    public static String generateAuthKey(String password, String username) throws CryptoException {
+        final int ITERATION_COUNT = 100000;
+        final int KEY_SIZE = 512;
+        
+        try {
+            KeySpec spec = new PBEKeySpec(password.toCharArray(), username.getBytes(), ITERATION_COUNT, KEY_SIZE);
+            SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+            String authKey = Base64.getEncoder().encodeToString(f.generateSecret(spec).getEncoded());
+            
+            return authKey;
+        } catch (Exception e) {
+            throw new CryptoException(e);
+        }
+    }
+    
+    public static KeyPair generateRsaKeyPair() throws CryptoException {
+        final int KEY_LENGTH = 2048;
+        
+        try {
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(KEY_LENGTH);
+            KeyPair kp = kpg.genKeyPair();
+            return kp;
         } catch (Exception e) {
             throw new CryptoException(e);
         }

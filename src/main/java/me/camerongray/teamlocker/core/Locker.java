@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.apache.http.client.utils.URIBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -498,12 +499,14 @@ public class Locker {
     }
     
     public void changeOwnPassword(User user, String newPassword)  throws LockerRuntimeException {
+        if (newPassword.isEmpty()) {
+            throw new LockerRuntimeException("You must enter a password!");
+        }
+
         try {
             Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(newPassword, user.getPrivateKey());
             
-            KeySpec spec = new PBEKeySpec(newPassword.toCharArray(), user.getUsername().getBytes(), 100000, 512);
-            SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-            String newAuthKey = Base64.getEncoder().encodeToString(f.generateSecret(spec).getEncoded());
+            String newAuthKey = Crypto.generateAuthKey(newPassword, user.getUsername());
 
             Base64.Encoder encoder = Base64.getEncoder();
             
@@ -522,6 +525,28 @@ public class Locker {
             }
         } catch (LockerRuntimeException e) {
             throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    //TODO: Validate inputs
+//    public void addUser(String username, String password, String fullName, String email, boolean isAdmin) throws LockerRuntimeException {
+    public void addUser(String username, String password) throws LockerRuntimeException {
+        try {
+            KeyPair keypair = Crypto.generateRsaKeyPair();
+            Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(password, keypair.getPrivate().getEncoded());
+            String authKey = Crypto.generateAuthKey(password, username);
+            
+            Crypto.PublicKeyEncrypted pke = Crypto.rsaEncryptWithPublicKey(keypair.getPublic().getEncoded(), "Hello world!".getBytes());
+            
+            // TODO: Move AES key decryption logic into Crypto
+            JSONObject aes = new JSONObject(new String(Crypto.rsaDecryptWithPrivateKey(keypair.getPrivate().getEncoded(), pke.getEncryptedAesKey())));
+            System.out.println(new String(Crypto.aesDecrypt(aes.getString("key"), aes.getString("iv"), pke.getEncryptedData())));
+//Crypto.
+            
+//        } catch (LockerRuntimeException e) {
+//            throw e;
         } catch (Exception e) {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }

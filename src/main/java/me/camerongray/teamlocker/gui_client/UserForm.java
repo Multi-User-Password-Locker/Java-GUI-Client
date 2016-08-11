@@ -5,6 +5,11 @@
  */
 package me.camerongray.teamlocker.gui_client;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import me.camerongray.teamlocker.core.Locker;
+import me.camerongray.teamlocker.core.LockerRuntimeException;
+
 /**
  *
  * @author camerong
@@ -13,13 +18,15 @@ public class UserForm extends javax.swing.JDialog {
     public static final int EDIT_MODE = 0;
     public static final int NEW_MODE = 1;
     private int mode;
+    private Locker locker;
 
     /**
      * Creates new form UserForm
      */
-    public UserForm(java.awt.Frame parent, boolean modal, int mode) {
+    public UserForm(java.awt.Frame parent, boolean modal, int mode, Locker locker) {
         super(parent, modal);
         this.mode = mode;
+        this.locker = locker;
         initComponents();
         
         if (mode == UserForm.EDIT_MODE) {
@@ -94,6 +101,11 @@ public class UserForm extends javax.swing.JDialog {
         });
 
         btnSubmit.setText(" ");
+        btnSubmit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSubmitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -184,6 +196,14 @@ public class UserForm extends javax.swing.JDialog {
         lblPassword.setVisible(true);
         lblPasswordConfirm.setVisible(true);
     }//GEN-LAST:event_btnChangePasswordActionPerformed
+
+    private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
+        try {
+            locker.addUser(txtUsername.getText(), new String(txtPassword.getPassword()));
+        } catch (LockerRuntimeException ex) {
+            Logger.getLogger(UserForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnSubmitActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;

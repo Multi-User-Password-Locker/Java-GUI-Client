@@ -450,7 +450,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_menuChangePasswordActionPerformed
 
     private void menuNewUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNewUserActionPerformed
-        (new UserForm(this, true, UserForm.EDIT_MODE)).setVisible(true);
+        (new UserForm(this, true, UserForm.NEW_MODE, this.locker)).setVisible(true);
     }//GEN-LAST:event_menuNewUserActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
