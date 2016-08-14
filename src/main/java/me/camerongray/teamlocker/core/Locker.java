@@ -530,9 +530,12 @@ public class Locker {
         }
     }
     
-    //TODO: Validate inputs
-//    public void addUser(String username, String password, String fullName, String email, boolean isAdmin) throws LockerRuntimeException {
-    public void addUser(String username, String password) throws LockerRuntimeException {
+    public void addUser(String username, String password, String fullName, String email, boolean isAdmin) throws LockerRuntimeException {
+        Validation.ensureNonEmpty(username, "Username");
+        Validation.ensureNonEmpty(password, "Password");
+        Validation.ensureNonEmpty(fullName, "Full Name");
+        Validation.ensureNonEmpty(email, "Email");
+        
         try {
             KeyPair keypair = Crypto.generateRsaKeyPair();
             Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(password, keypair.getPrivate().getEncoded());

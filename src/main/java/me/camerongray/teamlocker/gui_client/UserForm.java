@@ -7,8 +7,10 @@ package me.camerongray.teamlocker.gui_client;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
+import me.camerongray.teamlocker.core.Validation;
 
 /**
  *
@@ -198,10 +200,26 @@ public class UserForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnChangePasswordActionPerformed
 
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
+        boolean isAdmin = ((String)lstUserType.getSelectedItem()).equals("Administrator");
+        
+        if (isAdmin) {
+            int confirm = JOptionPane.showConfirmDialog(this, "You are about to create a"+
+                    " user with administrator privileges.\n\nThis means that the user has"+
+                    " full control over all accounts in the system, can add/modify users"+
+                    " and cannot be restricted to specific folders.\n\nAre you sure that you"+
+                    " want to continue?", "Creating Administrator User",
+                    JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.NO_OPTION) {
+                return;
+            }
+        }
+        
         try {
-            locker.addUser(txtUsername.getText(), new String(txtPassword.getPassword()));
-        } catch (LockerRuntimeException ex) {
-            Logger.getLogger(UserForm.class.getName()).log(Level.SEVERE, null, ex);
+            Validation.validatePassword(txtPassword.getPassword(), txtPasswordConfirm.getPassword());
+            locker.addUser(txtUsername.getText(), new String(txtPassword.getPassword()), txtFullName.getText(), txtEmail.getText(), isAdmin);
+        } catch (LockerRuntimeException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(),
+                            "Add User", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnSubmitActionPerformed
 

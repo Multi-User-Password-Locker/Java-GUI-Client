@@ -18,7 +18,7 @@ public class Validation {
         }
     }
     
-    public static void validatePassword(byte[] password, byte[] passwordConfirmation) throws LockerRuntimeException {
+    public static void validatePassword(char[] password, char[] passwordConfirmation) throws LockerRuntimeException {
         if (password.length == 0) {
             throw new LockerRuntimeException("You must specify a password!");
         }
