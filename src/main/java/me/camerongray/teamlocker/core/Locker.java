@@ -211,6 +211,8 @@ public class Locker {
             permission.put("write", p.isWrite());
             json_permissions.put(permission);
         }
+        
+        PublicKey[] publicKeys = this.getFolderPublicKeys(folderId);
 
         try {
             JSONObject payload = new JSONObject();
@@ -229,7 +231,7 @@ public class Locker {
                 for (Account a : accounts) {
                     String password = this.getAccountPassword(a.getId(), privateKey);
                     // TODO - encryptAccount requests all public keys for a folder every call, cache them somehow as always requesting same?
-                    EncryptedAccount[] eas = this.encryptAccount(folderId, a.getName(), a.getUsername(), password, a.getNotes(), newReadUsers);
+                    EncryptedAccount[] eas = this.encryptAccount(a.getName(), a.getUsername(), password, a.getNotes(), newReadUsers, publicKeys);
                     JSONArray ead = new JSONArray();
                     for (EncryptedAccount ea : eas) {
                         ead.put(new JSONObject()
