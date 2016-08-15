@@ -399,9 +399,16 @@ public class Locker {
         return this.encryptAccount(folderId, name, username, password, notes, null);
     }
     
+    private EncryptedAccount encryptAccount(String name, String username, String password, String notes, PublicKey publicKey) throws LockerRuntimeException {
+        return this.encryptAccount(name, username, password, notes, null, new PublicKey[]{publicKey})[0];
+    }
+    
     private EncryptedAccount[] encryptAccount(int folderId, String name, String username, String password, String notes, ArrayList<Integer> userIds) throws LockerRuntimeException {
         PublicKey[] publicKeys = this.getFolderPublicKeys(folderId);
-
+        return this.encryptAccount(name, username, password, notes, userIds, publicKeys);
+    }
+    
+    private EncryptedAccount[] encryptAccount(String name, String username, String password, String notes, ArrayList<Integer> userIds, PublicKey[] publicKeys) throws LockerRuntimeException {
         byte[] metadataBytes = (new JSONObject()
                 .put("name", name)
                 .put("notes", notes)
