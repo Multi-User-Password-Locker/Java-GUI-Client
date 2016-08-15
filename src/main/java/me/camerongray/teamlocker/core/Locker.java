@@ -530,7 +530,7 @@ public class Locker {
         }
     }
     
-    public void addUser(String username, String password, String fullName, String email, boolean isAdmin) throws LockerRuntimeException {
+    public int addUser(String username, String password, String fullName, String email, boolean isAdmin) throws LockerRuntimeException {
         Validation.ensureNonEmpty(username, "Username");
         Validation.ensureNonEmpty(password, "Password");
         Validation.ensureNonEmpty(fullName, "Full Name");
@@ -541,15 +541,28 @@ public class Locker {
             Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(password, keypair.getPrivate().getEncoded());
             String authKey = Crypto.generateAuthKey(password, username);
             
-            Crypto.PublicKeyEncrypted pke = Crypto.rsaEncryptWithPublicKey(keypair.getPublic().getEncoded(), "Hello world!".getBytes());
+            Base64.Encoder encoder = Base64.getEncoder();
             
-            // TODO: Move AES key decryption logic into Crypto
-            JSONObject aes = new JSONObject(new String(Crypto.rsaDecryptWithPrivateKey(keypair.getPrivate().getEncoded(), pke.getEncryptedAesKey())));
-            System.out.println(new String(Crypto.aesDecrypt(aes.getString("key"), aes.getString("iv"), pke.getEncryptedData())));
-//Crypto.
+            String payload = (new JSONObject()
+                    .put("encrypted_private_key", new String(encoder.encode(encryptedPrivateKey.getKey())))
+                    .put("aes_iv", new String(encoder.encode(encryptedPrivateKey.getIv())))
+                    .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
+                    .put("public_key", new String(encoder.encode(keypair.getPublic().getEncoded())))
+                    .put("auth_key", authKey)
+                    .put("username", username)
+                    .put("full_name", fullName)
+                    .put("email", email)
+                    .put("admin", isAdmin)).toString();
             
-//        } catch (LockerRuntimeException e) {
-//            throw e;
+            JSONObject response = Unirest.put(this.getUrl("users")).basicAuth(this.username,
+                    this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
+                            payload).asJson().getBody().getObject();
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            return response.getInt("user_id");
         } catch (Exception e) {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }

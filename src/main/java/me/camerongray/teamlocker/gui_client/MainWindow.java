@@ -69,6 +69,7 @@ public class MainWindow extends javax.swing.JFrame {
             this.menuEditFolder.setVisible(false);
             this.sepFolder.setVisible(false);
             this.lblAdministratorFlag.setVisible(false);
+            this.mnuUsers.setVisible(false);
         }
         this.lblUser.setText(this.user.getUsername());
         menuNewAccount.setEnabled(false);
