@@ -530,6 +530,7 @@ public class Locker {
         }
     }
     
+    // TODO: Add support for setting folder permissions when adding user - Admins should be granted access to all folders
     public int addUser(String username, String password, String fullName, String email, boolean isAdmin) throws LockerRuntimeException {
         Validation.ensureNonEmpty(username, "Username");
         Validation.ensureNonEmpty(password, "Password");
