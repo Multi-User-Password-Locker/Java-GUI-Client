@@ -28,14 +28,26 @@ import org.json.JSONArray;
  * Created by camerong on 09/07/16.
  */
 public class Locker {
+    private static Locker instance = null;
     private String server;
     private int port;
     private String username;
     private String password;
     private String auth_key;
     private ObjectMapper objectMapper;
+    
+    protected Locker() {
+        // Prevent instantiation
+    }
+    
+    public static Locker getInstance() {
+        if (instance == null) {
+            instance = new Locker();
+        }
+        return instance;
+    }
 
-    public Locker(String server, int port, String username, String password) throws LockerRuntimeException {
+    public void init(String server, int port, String username, String password) throws LockerRuntimeException {
 
         try {
             KeySpec spec = new PBEKeySpec(password.toCharArray(), username.getBytes(), 100000, 512);
@@ -53,7 +65,7 @@ public class Locker {
         this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
     
-    private String getUrl(String path) {
+    public String getUrl(String path) {
         URIBuilder u = new URIBuilder();
         u.setScheme("http");
         u.setHost(this.server);

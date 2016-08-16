@@ -26,10 +26,10 @@ public class ChangePassword extends javax.swing.JDialog {
     /**
      * Creates new form ChangePassword
      */
-    public ChangePassword(MainWindow parent, boolean modal, Locker locker, User user) {
+    public ChangePassword(MainWindow parent, boolean modal, User user) {
         super(parent, modal);
         initComponents();
-        this.locker = locker;
+        this.locker = Locker.getInstance();
         this.user = user;
         this.parent = parent;
         this.getRootPane().setDefaultButton(btnChangePassword);

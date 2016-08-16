@@ -291,7 +291,7 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JTextField txtPort;
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
-    class LoginTask extends SwingWorker<LoginTaskResult, Object> {
+    class LoginTask extends SwingWorker<Void, Object> {
         private Login dialog;
         private String hostname;
         private int port;
@@ -307,8 +307,9 @@ public class Login extends javax.swing.JFrame {
         }
 
         @Override
-        public LoginTaskResult doInBackground() throws Exception {
-            Locker locker = new Locker(hostname, port, username, password);
+        public Void doInBackground() throws Exception {
+            Locker locker = Locker.getInstance();
+            locker.init(hostname, port, username, password);
 
             if (locker.checkAuth()) {
                 if (this.dialog.chkRememberUser.isSelected()) {
@@ -328,11 +329,10 @@ public class Login extends javax.swing.JFrame {
                     this.dialog.preferences.remove("login_port");
                     this.dialog.preferences.putBoolean("login_rememberServer", false);
                 }
-                
-                return new LoginTaskResult(locker.getCurrentUser(), locker);
             } else {
                 throw new LockerSecurityException("Incorrect Username/Password, Please try again!");
             }
+            return null;
         }
 
         @Override
@@ -340,8 +340,8 @@ public class Login extends javax.swing.JFrame {
             panelLoggingIn.setVisible(false);
             btnLogin.setEnabled(true);
             try {
-                LoginTaskResult result = this.get();
-                javax.swing.JFrame f = new MainWindow(result.getLocker(), result.getUser());
+                this.get();
+                javax.swing.JFrame f = new MainWindow();
                 f.setVisible(true);
                 this.dialog.dispose();
             } catch (Exception e) {
@@ -354,32 +354,5 @@ public class Login extends javax.swing.JFrame {
                 }
             }
         }
-    }
-    
-    private class LoginTaskResult {
-        private User user;
-        private Locker locker;
-
-        public LoginTaskResult(User user, Locker locker) {
-            this.user = user;
-            this.locker = locker;
-        }
-
-        public User getUser() {
-            return user;
-        }
-
-        public void setUser(User user) {
-            this.user = user;
-        }
-
-        public Locker getLocker() {
-            return locker;
-        }
-
-        public void setLocker(Locker locker) {
-            this.locker = locker;
-        }
-
     }
 }

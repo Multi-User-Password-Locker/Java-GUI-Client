@@ -26,10 +26,10 @@ public class UserForm extends javax.swing.JDialog {
     /**
      * Creates new form UserForm
      */
-    public UserForm(java.awt.Frame parent, boolean modal, int mode, Locker locker) {
+    public UserForm(java.awt.Frame parent, boolean modal, int mode) {
         super(parent, modal);
         this.mode = mode;
-        this.locker = locker;
+        this.locker = Locker.getInstance();
         initComponents();
         
         if (mode == UserForm.EDIT_MODE) {

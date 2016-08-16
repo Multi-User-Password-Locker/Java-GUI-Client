@@ -31,11 +31,11 @@ public class EditFolder extends javax.swing.JDialog {
     /**
      * Creates new form EditFolder
      */
-    public EditFolder(MainWindow parent, boolean modal, User user, Locker locker, Folder folder, FolderPermission[] permissions) {
+    public EditFolder(MainWindow parent, boolean modal, User user, Folder folder, FolderPermission[] permissions) {
         super(parent, modal);
         this.parent = parent;
         this.user = user;
-        this.locker = locker;
+        this.locker = Locker.getInstance();
         this.folder = folder;
         initComponents();
         this.panelSavingFolder.setVisible(false);

@@ -33,11 +33,11 @@ public class AccountForm extends javax.swing.JDialog {
 
     
     // Show form for creating new account
-    public AccountForm(MainWindow parent, boolean modal, Locker locker, Folder folder) {
+    public AccountForm(MainWindow parent, boolean modal, Folder folder) {
         super(parent, modal);
         initComponents();
+        this.locker = Locker.getInstance();
         this.mode = mode;
-        this.locker = locker;
         this.folder = folder;
         this.parent = parent;
         this.mode = AccountForm.NEW_MODE;
@@ -53,10 +53,10 @@ public class AccountForm extends javax.swing.JDialog {
     }
     
     // Show form for viewing/editing an existing account
-    public AccountForm(MainWindow parent, boolean modal, Locker locker, User user, Account account, Folder folder) {
+    public AccountForm(MainWindow parent, boolean modal, User user, Account account, Folder folder) {
         super(parent, modal);
         initComponents();
-        this.locker = locker;
+        this.locker = Locker.getInstance();        
         this.parent = parent;
         this.account = account;
         this.user = user;
