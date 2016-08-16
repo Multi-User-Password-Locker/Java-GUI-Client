@@ -43,7 +43,7 @@ public class MainWindow extends javax.swing.JFrame {
     public MainWindow() {
         this.locker = Locker.getInstance();
         try {
-            this.user = this.locker.getCurrentUser();
+            this.user = User.getCurrent();
         } catch (LockerRuntimeException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(),
                             "Application Error", JOptionPane.ERROR_MESSAGE);

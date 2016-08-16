@@ -5,7 +5,9 @@
  */
 package me.camerongray.teamlocker.core;
 
+import com.mashape.unirest.http.Unirest;
 import java.util.Base64;
+import org.json.JSONObject;
 
 /**
  *
@@ -23,6 +25,7 @@ public class User {
     private byte[] aesIv;
     private String authHash;
     private byte[] privateKey;
+    private boolean isCurrentUser;
     
     public User() {}
     
@@ -125,8 +128,86 @@ public class User {
     public void setPrivateKey(byte[] privateKey) {
         this.privateKey = privateKey;
     }
+
+    public void setIsCurrentUser(boolean isCurrentUser) {
+        this.isCurrentUser = isCurrentUser;
+    }
+
+    public boolean isIsCurrentUser() {
+        return isCurrentUser;
+    }
     
-    public void decryptPrivateKey(String password) throws CryptoException {
-        this.privateKey = Crypto.aesDecrypt(password, this.pbkdf2Salt, this.aesIv, encryptedPrivateKey);
+    public static User getCurrent() throws LockerRuntimeException {
+        Locker locker = Locker.getInstance();
+        try {           
+            String response = locker.makeGetRequest("users/self").asJson().getBody().getObject().getJSONObject("user").toString();
+            
+            User user = locker.getObjectMapper().readValue(response, User.class);
+            user.setIsCurrentUser(true);
+            
+            // Decrypts the private key
+            user.setPrivateKey(Crypto.aesDecrypt(locker.getPassword(), user.getPbkdf2Salt(), user.getAesIv(), user.getEncryptedPrivateKey()));
+            
+            
+            return user;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    public static User[] getAll() throws LockerRuntimeException {
+        Locker locker = Locker.getInstance();
+        try {
+            JSONObject response = locker.makeGetRequest("users").asJson().getBody().getObject();
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+                        
+            User[] users = locker.getObjectMapper().readValue(response.getJSONArray("users").toString(), User[].class);
+            
+            return users;
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    public void changePassword(String newPassword) throws LockerRuntimeException {
+        if (newPassword.isEmpty()) {
+            throw new LockerRuntimeException("You must enter a password!");
+        }
+        
+        if (!this.isCurrentUser) {
+            throw new LockerRuntimeException("You can only change the password for your own user!");
+        }
+        
+        Locker locker = Locker.getInstance();
+
+        try {
+            Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(newPassword, this.privateKey);
+            
+            String newAuthKey = Crypto.generateAuthKey(newPassword, this.username);
+
+            Base64.Encoder encoder = Base64.getEncoder();
+            
+            String payload = (new JSONObject()
+                    .put("encrypted_private_key", new String(encoder.encode(encryptedPrivateKey.getKey())))
+                    .put("aes_iv", new String(encoder.encode(encryptedPrivateKey.getIv())))
+                    .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
+                    .put("auth_key", newAuthKey)).toString();
+            
+            JSONObject response = locker.makePostRequest("users/self/update_password").header("accept", "application/json").header("content-type", "application/json").body(
+                            payload).asJson().getBody().getObject();
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
     }
 }

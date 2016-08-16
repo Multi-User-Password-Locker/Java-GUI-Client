@@ -15,6 +15,8 @@ import org.json.JSONException;
 import org.apache.http.client.utils.URIBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.mashape.unirest.request.GetRequest;
+import com.mashape.unirest.request.HttpRequestWithBody;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,6 +75,16 @@ public class Locker {
         u.setPath("/"+path+"/");
         return u.toString();
     }
+    
+    public GetRequest makeGetRequest(String url) {
+        return Unirest.get(this.getUrl(url)).basicAuth(this.username,
+                this.auth_key);
+    }
+    
+    public HttpRequestWithBody makePostRequest(String url) {
+        return Unirest.post(this.getUrl(url)).basicAuth(this.username,
+                this.auth_key);
+    }
 
     public boolean checkAuth() throws LockerRuntimeException {
         try {
@@ -85,37 +97,12 @@ public class Locker {
         }
     }
     
-    public User getCurrentUser() throws LockerRuntimeException {
-        try {
-            String response = Unirest.get(this.getUrl("users/self")).basicAuth(this.username,
-                    this.auth_key).asJson().getBody().getObject().getJSONObject("user").toString();
-            
-            User user = this.objectMapper.readValue(response, User.class);
-            user.decryptPrivateKey(this.password);
-            
-            return user;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
+    public ObjectMapper getObjectMapper() {
+        return this.objectMapper;
     }
     
-    public User[] getAllUsers() throws LockerRuntimeException {
-        try {
-            JSONObject response = Unirest.get(this.getUrl("users")).basicAuth(this.username,
-                    this.auth_key).asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            User[] users = this.objectMapper.readValue(response.getJSONArray("users").toString(), User[].class);
-            
-            return users;
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
+    public String getPassword() {
+        return this.password;
     }
     
     public Folder[] getFolders() throws LockerRuntimeException {
@@ -165,7 +152,7 @@ public class Locker {
                 permissionMap.put(permission.getInt("user_id"), permission);
             }
             
-            User[] users = this.getAllUsers();
+            User[] users = User.getAll();
             ArrayList<FolderPermission> folderPermissions = new ArrayList<>();
             for (User user : users) {
                 boolean read = false;
@@ -512,38 +499,6 @@ public class Locker {
             }
             
             return keys.toArray(new EncryptedAesKey[keys.size()]);
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    public void changeOwnPassword(User user, String newPassword)  throws LockerRuntimeException {
-        if (newPassword.isEmpty()) {
-            throw new LockerRuntimeException("You must enter a password!");
-        }
-
-        try {
-            Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(newPassword, user.getPrivateKey());
-            
-            String newAuthKey = Crypto.generateAuthKey(newPassword, user.getUsername());
-
-            Base64.Encoder encoder = Base64.getEncoder();
-            
-            String payload = (new JSONObject()
-                    .put("encrypted_private_key", new String(encoder.encode(encryptedPrivateKey.getKey())))
-                    .put("aes_iv", new String(encoder.encode(encryptedPrivateKey.getIv())))
-                    .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
-                    .put("auth_key", newAuthKey)).toString();
-            
-            JSONObject response = Unirest.post(this.getUrl("users/self/update_password")).basicAuth(this.username,
-                    this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
-                            payload).asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
         } catch (LockerRuntimeException e) {
             throw e;
         } catch (Exception e) {

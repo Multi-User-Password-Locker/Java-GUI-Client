@@ -210,7 +210,7 @@ public class ChangePassword extends javax.swing.JDialog {
         
         @Override
         public Void doInBackground() throws LockerRuntimeException {
-            this.locker.changeOwnPassword(this.user, this.newPassword);
+            this.user.changePassword(this.newPassword);
             return null;
         }
         
