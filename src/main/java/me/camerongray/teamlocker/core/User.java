@@ -6,6 +6,7 @@
 package me.camerongray.teamlocker.core;
 
 import com.mashape.unirest.http.Unirest;
+import java.security.KeyPair;
 import java.util.Base64;
 import org.json.JSONObject;
 
@@ -26,8 +27,17 @@ public class User {
     private String authHash;
     private byte[] privateKey;
     private boolean isCurrentUser;
+    private String password;
     
     public User() {}
+
+    public User(String fullName, String username, String email, String password, boolean admin) {
+        this.fullName = fullName;
+        this.username = username;
+        this.email = email;
+        this.admin = admin;
+        this.password = password;
+    }
     
     public int getId() {
         return id;
@@ -137,7 +147,7 @@ public class User {
         return isCurrentUser;
     }
     
-    public static User getCurrent() throws LockerRuntimeException {
+    public static User getCurrentFromServer() throws LockerRuntimeException {
         Locker locker = Locker.getInstance();
         try {           
             String response = locker.makeGetRequest("users/self").asJson().getBody().getObject().getJSONObject("user").toString();
@@ -155,7 +165,7 @@ public class User {
         }
     }
     
-    public static User[] getAll() throws LockerRuntimeException {
+    public static User[] getAllFromServer() throws LockerRuntimeException {
         Locker locker = Locker.getInstance();
         try {
             JSONObject response = locker.makeGetRequest("users").asJson().getBody().getObject();
@@ -174,7 +184,7 @@ public class User {
         }
     }
     
-    public void changePassword(String newPassword) throws LockerRuntimeException {
+    public void changePasswordOnServer(String newPassword) throws LockerRuntimeException {
         if (newPassword.isEmpty()) {
             throw new LockerRuntimeException("You must enter a password!");
         }
@@ -206,6 +216,48 @@ public class User {
             }
         } catch (LockerRuntimeException e) {
             throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    // TODO: Add support for setting folder permissions when adding user - Admins should be granted access to all folders
+    public int addToServer() throws LockerRuntimeException {
+        Validation.ensureNonEmpty(this.username, "Username");
+        Validation.ensureNonEmpty(this.password, "Password");
+        Validation.ensureNonEmpty(this.fullName, "Full Name");
+        Validation.ensureNonEmpty(this.email, "Email");
+        
+        Locker locker = Locker.getInstance();
+        
+        try {
+            KeyPair keypair = Crypto.generateRsaKeyPair();
+            Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(this.password, keypair.getPrivate().getEncoded());
+            String authKey = Crypto.generateAuthKey(this.password, this.username);
+            
+            Base64.Encoder encoder = Base64.getEncoder();
+            
+            String payload = (new JSONObject()
+                    .put("encrypted_private_key", new String(encoder.encode(encryptedPrivateKey.getKey())))
+                    .put("aes_iv", new String(encoder.encode(encryptedPrivateKey.getIv())))
+                    .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
+                    .put("public_key", new String(encoder.encode(keypair.getPublic().getEncoded())))
+                    .put("auth_key", authKey)
+                    .put("username", this.username)
+                    .put("full_name", this.fullName)
+                    .put("email", this.email)
+                    .put("admin", this.admin)).toString();
+            
+            JSONObject response = locker.makePutRequest("users")
+                    .header("accept", "application/json")
+                    .header("content-type", "application/json")
+                    .body(payload).asJson().getBody().getObject();
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            return response.getInt("user_id");
         } catch (Exception e) {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }

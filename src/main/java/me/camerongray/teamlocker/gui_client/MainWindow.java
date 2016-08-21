@@ -43,7 +43,7 @@ public class MainWindow extends javax.swing.JFrame {
     public MainWindow() {
         this.locker = Locker.getInstance();
         try {
-            this.user = User.getCurrent();
+            this.user = User.getCurrentFromServer();
         } catch (LockerRuntimeException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(),
                             "Application Error", JOptionPane.ERROR_MESSAGE);
@@ -393,7 +393,8 @@ public class MainWindow extends javax.swing.JFrame {
         }
         
         try {
-            this.locker.addFolder(folderName);
+            // TODO: Move into SwingWorker?
+            new Folder(folderName).addToServer();
         } catch (LockerRuntimeException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(),
                             "New Folder", JOptionPane.ERROR_MESSAGE);
@@ -426,7 +427,7 @@ public class MainWindow extends javax.swing.JFrame {
         lblStatus.setText("Deleting folder...");
         lstFolders.clearSelection();
         try {
-            locker.deleteFolder(folder.getId());
+            folder.deleteFromServer();
         } catch (LockerRuntimeException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(),
                             "Delete Folder", JOptionPane.ERROR_MESSAGE);
@@ -504,7 +505,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         @Override
         public Folder[] doInBackground() throws Exception {
-            return this.locker.getFolders();
+            return Folder.getAllFromServer();
         }
 
         @Override
@@ -538,7 +539,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         @Override
         public FolderPermission[] doInBackground() throws Exception {
-            return this.window.locker.getFolderPermissions(this.folder);
+            return this.folder.getPermissionsFromServer();
         }
         
         @Override
@@ -567,7 +568,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         @Override
         public Account[] doInBackground() throws LockerRuntimeException {
-            Account[] accounts = this.window.locker.getFolderAccounts(this.folder.getId(), this.window.user.getPrivateKey());
+            Account[] accounts = this.folder.getAccountsFromServer(this.window.user.getPrivateKey());
             return accounts;
         }
         
@@ -607,7 +608,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         @Override
         public Account doInBackground() throws LockerRuntimeException {
-            Account account = locker.getAccount(accountId, user.getPrivateKey());
+            Account account = Account.getFromServer(accountId, user.getPrivateKey());
             return account;
         }
         

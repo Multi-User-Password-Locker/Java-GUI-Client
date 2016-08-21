@@ -375,7 +375,7 @@ public class AccountForm extends javax.swing.JDialog {
         
         @Override
         public String doInBackground() throws LockerRuntimeException {
-            String password = this.parent.locker.getAccountPassword(this.parent.account.getId(), this.parent.user.getPrivateKey());
+            String password = this.parent.account.getPasswordFromServer(this.parent.user.getPrivateKey());
             return password;
         }
         
@@ -412,18 +412,24 @@ public class AccountForm extends javax.swing.JDialog {
         @Override
         public Void doInBackground() throws LockerRuntimeException {
             if (this.parent.mode == AccountForm.NEW_MODE) {
-                this.parent.locker.addAccount(this.parent.folder.getId(), this.parent.txtAccountName.getText(),
-                    this.parent.txtUsername.getText(), new String(this.parent.txtPassword.getPassword()), this.parent.txtNotes.getText());
+                Account account = new Account(this.parent.txtAccountName.getText(), this.parent.txtUsername.getText(),
+                        this.parent.txtNotes.getText(), new String(this.parent.txtPassword.getPassword()));
+                account.addToServer(this.parent.folder);
             } else if (this.parent.mode == AccountForm.EDIT_MODE) {
                 String password;
                 if (this.parent.passwordChanged) {
                     password = new String(this.parent.txtPassword.getPassword());
                 } else {
                     // TODO: Can be avoided once issue Resources/#1 is resolved
-                    password = this.parent.locker.getAccountPassword(this.parent.account.getId(), this.parent.user.getPrivateKey());
+                    password = this.parent.account.getPasswordFromServer(this.parent.user.getPrivateKey());
                 }
-                this.parent.locker.updateAccount(this.parent.folder.getId(), this.parent.account.getId(), this.parent.txtAccountName.getText(),
-                    this.parent.txtUsername.getText(), password, this.parent.txtNotes.getText());
+                Account a = this.parent.account;
+                a.setName(this.parent.txtAccountName.getText());
+                a.setUsername(this.parent.txtUsername.getText());
+                a.setNotes(this.parent.txtNotes.getText());
+                a.setPassword(password);
+                
+                a.updateOnServer(this.parent.folder);
             }
             return null;
         }
@@ -455,7 +461,7 @@ public class AccountForm extends javax.swing.JDialog {
         
         @Override
         public Void doInBackground() throws LockerRuntimeException {
-            this.parent.locker.deleteAccount(this.parent.account.getId());
+            this.parent.account.deleteFromServer();
             return null;
         }
         

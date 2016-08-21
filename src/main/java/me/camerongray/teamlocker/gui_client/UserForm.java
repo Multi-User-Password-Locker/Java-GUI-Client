@@ -11,6 +11,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
+import me.camerongray.teamlocker.core.User;
 import me.camerongray.teamlocker.core.Validation;
 
 /**
@@ -251,7 +252,7 @@ public class UserForm extends javax.swing.JDialog {
         lblStatus.setText("Adding User...");
         panelStatus.setVisible(true);
         
-        (new AddUserTask(this, this.locker, txtUsername.getText(), txtPassword.getPassword(), txtFullName.getText(), txtEmail.getText(), isAdmin)).execute();
+        (new AddUserTask(this, this.locker, txtUsername.getText(), new String(txtPassword.getPassword()), txtFullName.getText(), txtEmail.getText(), isAdmin)).execute();
     }//GEN-LAST:event_btnSubmitActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -280,12 +281,12 @@ public class UserForm extends javax.swing.JDialog {
         private UserForm dialog;
         private Locker locker;
         private String username;
-        private char[] password;
+        private String password;
         private String fullName;
         private String email;
         private boolean isAdmin;
 
-        public AddUserTask(UserForm dialog, Locker locker, String username, char[] password, String fullName, String email, boolean isAdmin) {
+        public AddUserTask(UserForm dialog, Locker locker, String username, String password, String fullName, String email, boolean isAdmin) {
             this.dialog = dialog;
             this.locker = locker;
             this.username = username;
@@ -297,8 +298,7 @@ public class UserForm extends javax.swing.JDialog {
 
         @Override
         protected Void doInBackground() throws LockerRuntimeException {
-            this.locker.addUser(this.username, new String(this.password), this.fullName, this.email, this.isAdmin);
-
+            new User(this.fullName, this.username, this.email, this.password, this.isAdmin).addToServer();
             return null;
         }
         

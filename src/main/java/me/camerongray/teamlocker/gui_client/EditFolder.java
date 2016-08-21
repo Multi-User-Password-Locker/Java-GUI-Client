@@ -280,8 +280,8 @@ public class EditFolder extends javax.swing.JDialog {
 
         @Override
         public Void doInBackground() throws Exception {
-            this.dialog.locker.setFolderPermissions(this.dialog.folder.getId(), this.dialog.user.getPrivateKey(), this.permissions, this.newReadUsers);
-            this.dialog.locker.updateFolder(this.dialog.folder);
+            this.dialog.folder.updatePermissionsOnServer(this.dialog.user.getPrivateKey(), this.permissions, this.newReadUsers);
+            this.dialog.folder.updateOnServer();
             return null;
         }
 
