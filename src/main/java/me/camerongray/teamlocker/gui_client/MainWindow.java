@@ -40,9 +40,15 @@ public class MainWindow extends javax.swing.JFrame {
     /**
      * Creates new form MainWindow
      */
-    public MainWindow(Locker locker, User user) {
-        this.locker = locker;
-        this.user = user;
+    public MainWindow() {
+        this.locker = Locker.getInstance();
+        try {
+            this.user = User.getCurrentFromServer();
+        } catch (LockerRuntimeException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(),
+                            "Application Error", JOptionPane.ERROR_MESSAGE);
+            this.dispose();
+        }
         initComponents();
         populateUi();
         
@@ -374,7 +380,8 @@ public class MainWindow extends javax.swing.JFrame {
         }
         
         try {
-            this.locker.addFolder(folderName);
+            // TODO: Move into SwingWorker?
+            new Folder(folderName).addToServer();
         } catch (LockerRuntimeException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(),
                             "New Folder", JOptionPane.ERROR_MESSAGE);
@@ -407,7 +414,7 @@ public class MainWindow extends javax.swing.JFrame {
         lblStatus.setText("Deleting folder...");
         lstFolders.clearSelection();
         try {
-            locker.deleteFolder(folder.getId());
+            folder.deleteFromServer();
         } catch (LockerRuntimeException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(),
                             "Delete Folder", JOptionPane.ERROR_MESSAGE);
@@ -430,16 +437,16 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_menuEditFolderActionPerformed
 
     private void menuNewAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNewAccountActionPerformed
-        new AccountForm(this, true, this.locker, this.selectedFolder).setVisible(true);
+        new AccountForm(this, true, this.selectedFolder).setVisible(true);
     }//GEN-LAST:event_menuNewAccountActionPerformed
 
     private void menuChangePasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuChangePasswordActionPerformed
-        (new ChangePassword(this, true, this.locker, this.user)).setVisible(true);
+        (new ChangePassword(this, true, this.user)).setVisible(true);
     }//GEN-LAST:event_menuChangePasswordActionPerformed
 
 <<<<<<< master
     private void menuNewUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNewUserActionPerformed
-        (new UserForm(this, true, UserForm.NEW_MODE, this.locker)).setVisible(true);
+        (new UserForm(this, true, UserForm.NEW_MODE)).setVisible(true);
     }//GEN-LAST:event_menuNewUserActionPerformed
 =======
     private void mnuManageUsersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuManageUsersActionPerformed
@@ -490,7 +497,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         @Override
         public Folder[] doInBackground() throws Exception {
-            return this.locker.getFolders();
+            return Folder.getAllFromServer();
         }
 
         @Override
@@ -524,7 +531,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         @Override
         public FolderPermission[] doInBackground() throws Exception {
-            return this.window.locker.getFolderPermissions(this.folder);
+            return this.folder.getPermissionsFromServer();
         }
         
         @Override
@@ -533,7 +540,7 @@ public class MainWindow extends javax.swing.JFrame {
             lblStatus.setText("Ready");
             try {
                 FolderPermission[] permissions = this.get();
-                    new EditFolder(this.window, true, this.window.user, this.window.locker, this.folder, permissions).setVisible(true);
+                    new EditFolder(this.window, true, this.window.user, this.folder, permissions).setVisible(true);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this.window, e.getCause().getMessage(),
                             "Application Error", JOptionPane.ERROR_MESSAGE);
@@ -552,7 +559,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         @Override
         public Account[] doInBackground() throws LockerRuntimeException {
-            Account[] accounts = this.window.locker.getFolderAccounts(this.folder.getId(), this.window.user.getPrivateKey());
+            Account[] accounts = this.folder.getAccountsFromServer(this.window.user.getPrivateKey());
             return accounts;
         }
         
@@ -591,7 +598,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         @Override
         public Account doInBackground() throws LockerRuntimeException {
-            Account account = locker.getAccount(accountId, user.getPrivateKey());
+            Account account = Account.getFromServer(accountId, user.getPrivateKey());
             return account;
         }
         
@@ -601,7 +608,7 @@ public class MainWindow extends javax.swing.JFrame {
             lblStatus.setText("Ready");
             try {
                 Account account = this.get();
-                new AccountForm(window, false, locker, window.user, account, window.selectedFolder).setVisible(true);
+                new AccountForm(window, false, window.user, account, window.selectedFolder).setVisible(true);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(window, e.getCause().getMessage(),
                             "Application Error", JOptionPane.ERROR_MESSAGE);

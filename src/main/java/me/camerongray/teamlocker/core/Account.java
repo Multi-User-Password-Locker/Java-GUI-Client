@@ -4,6 +4,10 @@
  * and open the template in the editor.
  */
 package me.camerongray.teamlocker.core;
+import com.mashape.unirest.http.Unirest;
+import java.util.ArrayList;
+import java.util.Base64;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -28,6 +32,13 @@ public class Account {
         this.name = metadata.getString("name");
         this.username = metadata.getString("username");
         this.notes = metadata.getString("notes");
+    }
+
+    public Account(String name, String username, String notes, String password) {
+        this.name = name;
+        this.username = username;
+        this.notes = notes;
+        this.password = password;
     }
 
     public int getId() {
@@ -70,4 +81,169 @@ public class Account {
         this.password = password;
     }
     
+    public void deleteFromServer() throws LockerRuntimeException {
+        Locker locker = Locker.getInstance();
+        try {
+            JSONObject response = locker.makeDeleteRequest("accounts/"+this.id).asJson().getBody().getObject();
+         
+            if (response.isNull("success")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    public String getPasswordFromServer(byte[] privateKey) throws LockerRuntimeException {
+        Locker locker = Locker.getInstance();
+        try {
+            JSONObject response = locker.makeGetRequest("accounts/"+this.id+"/password").asJson().getBody().getObject();            
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            JSONObject accountObject = response.getJSONObject("password");
+            byte[] encryptedPassword = Base64.getDecoder().decode(accountObject.getString("encrypted_password"));
+            byte[] encryptedAesKey = Base64.getDecoder().decode(accountObject.getString("encrypted_aes_key"));
+            
+            JSONObject aesKeyParts = new JSONObject(new String(Crypto.rsaDecryptWithPrivateKey(privateKey, encryptedAesKey)));
+
+            String password = new String(Crypto.aesDecrypt(aesKeyParts.getString("key"), aesKeyParts.getString("iv"), encryptedPassword));
+            return password;
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    public int addToServer(Folder folder) throws LockerRuntimeException {    
+        Locker locker = Locker.getInstance();
+        try {
+            Base64.Encoder encoder = Base64.getEncoder();
+            JSONArray accounts = new JSONArray();
+            EncryptedAccount[] encryptedAccounts = this.encrypt(folder);
+            for (EncryptedAccount account : encryptedAccounts) {
+               
+                accounts.put(new JSONObject()
+                        .put("user_id", account.getUserId())
+                        .put("password", new String(encoder.encode(account.getEncryptedPassword())))
+                        .put("account_metadata", new String(encoder.encode(account.getEncryptedMetadata())))
+                        .put("encrypted_aes_key", new String(encoder.encode(account.getEncryptedAesKey()))));
+            }
+            String payload = new JSONObject().put("folder_id", folder.getId())
+                    .put("encrypted_account_data", accounts).toString();
+            
+            JSONObject response = locker.makePutRequest("accounts/add").header("accept", "application/json").header("content-type", "application/json").body(
+                            payload).asJson().getBody().getObject();
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            int accountId = response.getInt("account_id");
+            return accountId;
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException(e);
+        }
+    }
+    
+    public EncryptedAccount[] encrypt(Folder folder) throws LockerRuntimeException {
+        return this.encrypt(folder, null);
+    }
+    
+//    public EncryptedAccount encrypt(String name, String username, String password, String notes, PublicKey publicKey) throws LockerRuntimeException {
+//        return this.encrypt(name, username, password, notes, null, new PublicKey[]{publicKey})[0];
+//    }
+    
+    public EncryptedAccount[] encrypt(Folder folder, ArrayList<Integer> userIds) throws LockerRuntimeException {
+        PublicKey[] publicKeys = folder.getPublicKeysFromServer();
+        return this.encrypt(userIds, publicKeys);
+    }
+    
+    public EncryptedAccount[] encrypt(ArrayList<Integer> userIds, PublicKey[] publicKeys) throws LockerRuntimeException {
+        byte[] metadataBytes = (new JSONObject()
+                .put("name", name)
+                .put("notes", notes)
+                .put("username", username)).toString().getBytes();
+
+
+        try {
+            ArrayList<EncryptedAccount> encryptedAccounts = new ArrayList<>();
+            for (PublicKey key : publicKeys) {
+                if (userIds == null || userIds.contains(key.getUserId())) {
+                    Crypto.AesKey aesKey = Crypto.generateAesKey();
+                    byte[] encryptedMetadata = Crypto.aesEncrypt(aesKey, metadataBytes);
+                    byte[] encryptedPassword = Crypto.aesEncrypt(aesKey, password.getBytes());
+                    byte[] encryptedAesKey = Crypto.rsaEncryptAesKey(key.getKey(), aesKey);
+
+                    encryptedAccounts.add(new EncryptedAccount(key.getUserId(), encryptedMetadata, encryptedPassword, encryptedAesKey));
+                }
+            }
+            
+            return encryptedAccounts.toArray(new EncryptedAccount[encryptedAccounts.size()]);
+        } catch (Exception e) {
+            throw new LockerRuntimeException(e);
+        }
+    }
+    
+    public void updateOnServer(Folder folder) throws LockerRuntimeException {      
+        Base64.Encoder encoder = Base64.getEncoder();
+        JSONArray accounts = new JSONArray();        
+        Locker locker = Locker.getInstance();
+        try {
+            EncryptedAccount[] encryptedAccounts = this.encrypt(folder);
+            for (EncryptedAccount account : encryptedAccounts) {
+               
+                accounts.put(new JSONObject()
+                        .put("user_id", account.getUserId())
+                        .put("password", new String(encoder.encode(account.getEncryptedPassword())))
+                        .put("account_metadata", new String(encoder.encode(account.getEncryptedMetadata())))
+                        .put("encrypted_aes_key", new String(encoder.encode(account.getEncryptedAesKey()))));
+            }
+            String payload = new JSONObject().put("folder_id", folder.getId())
+                    .put("encrypted_account_data", accounts).toString();
+            
+            JSONObject response = locker.makePostRequest("accounts/"+this.id)
+                    .header("accept", "application/json")
+                    .header("content-type", "application/json")
+                    .body(payload).asJson().getBody().getObject();
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException(e);
+        }
+    }
+    
+    public static Account getFromServer(int accountId, byte[] privateKey) throws LockerRuntimeException {
+        Locker locker = Locker.getInstance();
+        try {
+            JSONObject response = locker.makeGetRequest("accounts/"+accountId).asJson().getBody().getObject();            
+            
+            if (!response.isNull("error")) {
+                throw new LockerRuntimeException(response.getString("message"));
+            }
+            
+            JSONObject accountObject = response.getJSONObject("account");
+            byte[] encryptedMetadata = Base64.getDecoder().decode(accountObject.getString("account_metadata"));
+            byte[] encryptedAesKey = Base64.getDecoder().decode(accountObject.getString("encrypted_aes_key"));
+            
+            Account account = new Account(accountObject.getInt("id"), encryptedMetadata, encryptedAesKey, privateKey);
+            return account;
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
 }
