@@ -67,9 +67,9 @@ public class MainWindow extends javax.swing.JFrame {
             this.menuNewFolder.setVisible(false);
             this.menuDeleteFolder.setVisible(false);
             this.menuEditFolder.setVisible(false);
+            this.mnuManageUsers.setVisible(false);
             this.sepFolder.setVisible(false);
             this.lblAdministratorFlag.setVisible(false);
-            this.mnuUsers.setVisible(false);
         }
         this.lblUser.setText(this.user.getUsername());
         menuNewAccount.setEnabled(false);
@@ -118,13 +118,10 @@ public class MainWindow extends javax.swing.JFrame {
         menuEditFolder = new javax.swing.JMenuItem();
         menuDeleteFolder = new javax.swing.JMenuItem();
         sepRefresh = new javax.swing.JPopupMenu.Separator();
+        mnuManageUsers = new javax.swing.JMenuItem();
         menuChangePassword = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         menuRefreshFolders = new javax.swing.JMenuItem();
-        mnuUsers = new javax.swing.JMenu();
-        menuNewUser = new javax.swing.JMenuItem();
-        menuEditUser = new javax.swing.JMenuItem();
-        menuDeleteUser = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("TeamLocker");
@@ -278,6 +275,14 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu2.add(menuDeleteFolder);
         jMenu2.add(sepRefresh);
 
+        mnuManageUsers.setText("Manage Users");
+        mnuManageUsers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuManageUsersActionPerformed(evt);
+            }
+        });
+        jMenu2.add(mnuManageUsers);
+
         menuChangePassword.setText("Change Password...");
         menuChangePassword.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -297,24 +302,6 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu2.add(menuRefreshFolders);
 
         jMenuBar1.add(jMenu2);
-
-        mnuUsers.setText("Users");
-
-        menuNewUser.setText("New User");
-        menuNewUser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuNewUserActionPerformed(evt);
-            }
-        });
-        mnuUsers.add(menuNewUser);
-
-        menuEditUser.setText("Edit User");
-        mnuUsers.add(menuEditUser);
-
-        menuDeleteUser.setText("Delete User");
-        mnuUsers.add(menuDeleteUser);
-
-        jMenuBar1.add(mnuUsers);
 
         setJMenuBar(jMenuBar1);
 
@@ -450,9 +437,17 @@ public class MainWindow extends javax.swing.JFrame {
         (new ChangePassword(this, true, this.locker, this.user)).setVisible(true);
     }//GEN-LAST:event_menuChangePasswordActionPerformed
 
+<<<<<<< master
     private void menuNewUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNewUserActionPerformed
         (new UserForm(this, true, UserForm.NEW_MODE, this.locker)).setVisible(true);
     }//GEN-LAST:event_menuNewUserActionPerformed
+=======
+    private void mnuManageUsersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuManageUsersActionPerformed
+        pgbStatus.setIndeterminate(true);
+        lblStatus.setText("Getting Users...");
+        (new GetUsersTask(this)).execute();
+    }//GEN-LAST:event_mnuManageUsersActionPerformed
+>>>>>>> local
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button button1;
@@ -471,16 +466,13 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JList<String> lstFolders;
     private javax.swing.JMenuItem menuChangePassword;
     private javax.swing.JMenuItem menuDeleteFolder;
-    private javax.swing.JMenuItem menuDeleteUser;
     private javax.swing.JMenuItem menuEditFolder;
-    private javax.swing.JMenuItem menuEditUser;
     private javax.swing.JMenuItem menuExit;
     private javax.swing.JMenuItem menuLogout;
     private javax.swing.JMenuItem menuNewAccount;
     private javax.swing.JMenuItem menuNewFolder;
-    private javax.swing.JMenuItem menuNewUser;
     private javax.swing.JMenuItem menuRefreshFolders;
-    private javax.swing.JMenu mnuUsers;
+    private javax.swing.JMenuItem mnuManageUsers;
     private javax.swing.JProgressBar pgbStatus;
     private javax.swing.JPopupMenu.Separator sepFolder;
     private javax.swing.JPopupMenu.Separator sepRefresh;
@@ -543,7 +535,6 @@ public class MainWindow extends javax.swing.JFrame {
                 FolderPermission[] permissions = this.get();
                     new EditFolder(this.window, true, this.window.user, this.window.locker, this.folder, permissions).setVisible(true);
             } catch (Exception e) {
-                e.printStackTrace();
                 JOptionPane.showMessageDialog(this.window, e.getCause().getMessage(),
                             "Application Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -583,7 +574,6 @@ public class MainWindow extends javax.swing.JFrame {
                     rowNum++;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 JOptionPane.showMessageDialog(this.window, e.getMessage(),
                                 "Application Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -613,7 +603,33 @@ public class MainWindow extends javax.swing.JFrame {
                 Account account = this.get();
                 new AccountForm(window, false, locker, window.user, account, window.selectedFolder).setVisible(true);
             } catch (Exception e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(window, e.getCause().getMessage(),
+                            "Application Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    class GetUsersTask extends SwingWorker<User[], Object> {
+        private MainWindow window;
+
+        public GetUsersTask(MainWindow window) {
+            this.window = window;
+        }
+        
+        @Override
+        public User[] doInBackground() throws LockerRuntimeException {
+            User[] users = User.getAllFromServer();
+            return users;
+        } 
+        
+        @Override
+        public void done() {
+            pgbStatus.setIndeterminate(false);
+            lblStatus.setText("Ready");
+            try {
+                User[] users = get();
+                (new UserIndex(this.window, true, users)).setVisible(true);
+            } catch (Exception e) {
                 JOptionPane.showMessageDialog(window, e.getCause().getMessage(),
                             "Application Error", JOptionPane.ERROR_MESSAGE);
             }
