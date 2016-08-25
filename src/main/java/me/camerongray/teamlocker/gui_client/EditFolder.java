@@ -31,11 +31,11 @@ public class EditFolder extends javax.swing.JDialog {
     /**
      * Creates new form EditFolder
      */
-    public EditFolder(MainWindow parent, boolean modal, User user, Locker locker, Folder folder, FolderPermission[] permissions) {
+    public EditFolder(MainWindow parent, boolean modal, User user, Folder folder, FolderPermission[] permissions) {
         super(parent, modal);
         this.parent = parent;
         this.user = user;
-        this.locker = locker;
+        this.locker = Locker.getInstance();
         this.folder = folder;
         initComponents();
         this.panelSavingFolder.setVisible(false);
@@ -280,8 +280,8 @@ public class EditFolder extends javax.swing.JDialog {
 
         @Override
         public Void doInBackground() throws Exception {
-            this.dialog.locker.setFolderPermissions(this.dialog.folder.getId(), this.dialog.user.getPrivateKey(), this.permissions, this.newReadUsers);
-            this.dialog.locker.updateFolder(this.dialog.folder);
+            this.dialog.folder.updatePermissionsOnServer(this.dialog.user.getPrivateKey(), this.permissions, this.newReadUsers);
+            this.dialog.folder.updateOnServer();
             return null;
         }
 

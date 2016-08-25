@@ -7,35 +7,38 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
-import org.json.JSONException;
 import org.apache.http.client.utils.URIBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import java.security.KeyPair;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.crypto.SecretKey;
-import org.json.JSONArray;
+import com.mashape.unirest.request.GetRequest;
+import com.mashape.unirest.request.HttpRequestWithBody;
 
 
 /**
  * Created by camerong on 09/07/16.
  */
 public class Locker {
+    private static Locker instance = null;
     private String server;
     private int port;
     private String username;
     private String password;
     private String auth_key;
     private ObjectMapper objectMapper;
+    
+    protected Locker() {
+        // Prevent instantiation
+    }
+    
+    public static Locker getInstance() {
+        if (instance == null) {
+            instance = new Locker();
+        }
+        return instance;
+    }
 
-    public Locker(String server, int port, String username, String password) throws LockerRuntimeException {
+    public void init(String server, int port, String username, String password) throws LockerRuntimeException {
 
         try {
             KeySpec spec = new PBEKeySpec(password.toCharArray(), username.getBytes(), 100000, 512);
@@ -53,13 +56,32 @@ public class Locker {
         this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
     
-    private String getUrl(String path) {
+    public String getUrl(String path) {
         URIBuilder u = new URIBuilder();
         u.setScheme("http");
         u.setHost(this.server);
         u.setPort(this.port);
         u.setPath("/"+path+"/");
         return u.toString();
+    }
+    
+    public GetRequest makeGetRequest(String url) {
+        return Unirest.get(this.getUrl(url)).basicAuth(this.username,
+                this.auth_key);
+    }
+    
+    public HttpRequestWithBody makePostRequest(String url) {
+        return Unirest.post(this.getUrl(url)).basicAuth(this.username,
+                this.auth_key);
+    }
+    
+    public HttpRequestWithBody makePutRequest(String url) {
+        return Unirest.put(this.getUrl(url)).basicAuth(this.username,
+                this.auth_key);
+    }
+    public HttpRequestWithBody makeDeleteRequest(String url) {
+        return Unirest.delete(this.getUrl(url)).basicAuth(this.username,
+                this.auth_key);
     }
 
     public boolean checkAuth() throws LockerRuntimeException {
@@ -73,509 +95,12 @@ public class Locker {
         }
     }
     
-    public User getCurrentUser() throws LockerRuntimeException {
-        try {
-            String response = Unirest.get(this.getUrl("users/self")).basicAuth(this.username,
-                    this.auth_key).asJson().getBody().getObject().getJSONObject("user").toString();
-            
-            User user = this.objectMapper.readValue(response, User.class);
-            user.decryptPrivateKey(this.password);
-            
-            return user;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
+    public ObjectMapper getObjectMapper() {
+        return this.objectMapper;
     }
     
-    public User[] getAllUsers() throws LockerRuntimeException {
-        try {
-            JSONObject response = Unirest.get(this.getUrl("users")).basicAuth(this.username,
-                    this.auth_key).asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            User[] users = this.objectMapper.readValue(response.getJSONArray("users").toString(), User[].class);
-            
-            return users;
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    public Folder[] getFolders() throws LockerRuntimeException {
-        try {
-            String response = Unirest.get(this.getUrl("folders")).basicAuth(this.username,
-                    this.auth_key).asJson().getBody().getObject().getJSONArray("folders").toString();
-            
-            Folder[] folders = this.objectMapper.readValue(response, Folder[].class);
-            return folders;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    public void addFolder(String folderName) throws LockerRuntimeException {
-        JSONObject obj = new JSONObject();
-        obj.put("name", folderName);
-        JSONObject response;
-        try {
-            response = Unirest.put(this.getUrl("folders/add")).basicAuth(this.username,
-                    this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
-                            obj.toString()).asJson().getBody().getObject();
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-            
-        if (response.isNull("success")) {
-            throw new LockerRuntimeException(response.getString("message"));
-        }
-    }
-    
-    public FolderPermission[] getFolderPermissions(Folder folder) throws LockerRuntimeException {
-        try {
-            JSONObject response = Unirest.get(this.getUrl(
-                    "folders/"+folder.getId()+"/permissions")).basicAuth(this.username,
-                    this.auth_key).asJson().getBody().getObject();
-            
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-
-            JSONArray permissions = response.getJSONArray("permissions");
-            HashMap<Integer, JSONObject> permissionMap = new HashMap<>();
-            for (int i = 0; i < permissions.length(); i++) {
-                JSONObject permission = permissions.getJSONObject(i);
-                permissionMap.put(permission.getInt("user_id"), permission);
-            }
-            
-            User[] users = this.getAllUsers();
-            ArrayList<FolderPermission> folderPermissions = new ArrayList<>();
-            for (User user : users) {
-                boolean read = false;
-                boolean write = false;
-                if (permissionMap.containsKey(user.getId())) {
-                    JSONObject permission = permissionMap.get(user.getId());
-                    read = permission.getBoolean("read");
-                    write = permission.getBoolean("write");
-                }
-                folderPermissions.add(new FolderPermission(user, folder, read, write));
-            }
-            
-            return folderPermissions.toArray(new FolderPermission[folderPermissions.size()]);
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    public void deleteFolder(int folderId) throws LockerRuntimeException {
-        JSONObject response;
-        try {
-            response = Unirest.delete(this.getUrl("folders/delete/"+folderId)).basicAuth(
-                    this.username, this.auth_key).asJson().getBody().getObject();
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-        
-        if (response.isNull("success")) {
-            throw new LockerRuntimeException(response.getString("message"));
-        }
-    }
-    
-    public void deleteAccount(int accountId) throws LockerRuntimeException {
-        JSONObject response;
-        try {
-            response = Unirest.delete(this.getUrl("accounts/"+accountId)).basicAuth(
-                    this.username, this.auth_key).asJson().getBody().getObject();
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-        
-        if (response.isNull("success")) {
-            throw new LockerRuntimeException(response.getString("message"));
-        }
-    }
-    
-    public void setFolderPermissions(int folderId, byte[] privateKey, FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerRuntimeException {
-        JSONArray json_permissions = new JSONArray();
-        for (FolderPermission p : permissions) {
-            JSONObject permission = new JSONObject();
-            permission.put("user_id", p.getUser().getId());
-            permission.put("read", p.isRead());
-            permission.put("write", p.isWrite());
-            json_permissions.put(permission);
-        }
-        
-        PublicKey[] publicKeys = this.getFolderPublicKeys(folderId);
-
-        try {
-            JSONObject payload = new JSONObject();
-            payload.put("permissions", json_permissions);
-            JSONObject response = Unirest.post(this.getUrl("folders/" + folderId + "/permissions")).basicAuth(this.username,
-                        this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
-                                payload.toString()).asJson().getBody().getObject();
-            
-            if (response.isNull("success")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            if (newReadUsers != null && newReadUsers.size() > 0) {
-                JSONArray encryptedAccounts = new JSONArray();
-                Account[] accounts = this.getFolderAccounts(folderId, privateKey);
-                for (Account a : accounts) {
-                    String password = this.getAccountPassword(a.getId(), privateKey);
-                    // TODO - encryptAccount requests all public keys for a folder every call, cache them somehow as always requesting same?
-                    EncryptedAccount[] eas = this.encryptAccount(a.getName(), a.getUsername(), password, a.getNotes(), newReadUsers, publicKeys);
-                    JSONArray ead = new JSONArray();
-                    for (EncryptedAccount ea : eas) {
-                        ead.put(new JSONObject()
-                                .put("user_id", ea.getUserId())
-                                .put("password", new String(Base64.getEncoder().encode(ea.getEncryptedPassword())))
-                                .put("account_metadata", new String(Base64.getEncoder().encode(ea.getEncryptedMetadata())))
-                                .put("encrypted_aes_key", new String(Base64.getEncoder().encode(ea.getEncryptedAesKey()))));
-                    }
-                    encryptedAccounts.put(new JSONObject()
-                            .put("account_id", a.getId())
-                            .put("encrypted_account_data", ead));
-                }
-                
-                response = Unirest.post(this.getUrl("accounts")).basicAuth(this.username,
-                        this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
-                                encryptedAccounts.toString()).asJson().getBody().getObject();
-            
-                if (response.isNull("success")) {
-                    throw new LockerRuntimeException(response.getString("message"));
-                }
-            }
-            
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    public void updateFolder(Folder folder) throws LockerRuntimeException {
-        JSONObject payload = new JSONObject();
-        payload.put("name", folder.getName());
-        try {
-            JSONObject response = Unirest.post(this.getUrl("folders/" + folder.getId() + "/save")).basicAuth(this.username,
-                        this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
-                                payload.toString()).asJson().getBody().getObject();
-            
-            if (response.isNull("success")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    public Account[] getFolderAccounts(int folderId, byte[] privateKey) throws LockerRuntimeException {
-        ArrayList<Account> accounts = new ArrayList<>();
-        try {
-            JSONObject response = Unirest.get(this.getUrl(
-                        "folders/"+folderId+"/accounts")).basicAuth(this.username,
-                        this.auth_key).asJson().getBody().getObject();            
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            JSONArray accountArray = response.getJSONArray("accounts");
-            for (int i = 0; i < accountArray.length(); i++) {
-                JSONObject accountObject = accountArray.getJSONObject(i);
-                byte[] encryptedMetadata = Base64.getDecoder().decode(accountObject.getString("account_metadata"));
-                byte[] encryptedAesKey = Base64.getDecoder().decode(accountObject.getString("encrypted_aes_key"));
-                accounts.add(new Account(accountObject.getInt("id"), encryptedMetadata, encryptedAesKey, privateKey));
-            }
-            
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-        return accounts.toArray(new Account[accounts.size()]);
-    }
-    
-    private PublicKey[] getFolderPublicKeys(int folderId) throws LockerRuntimeException {
-        ArrayList<PublicKey> publicKeys = new ArrayList<>();
-        try {
-            JSONObject response = Unirest.get(this.getUrl(
-                        "folders/"+folderId+"/public_keys")).basicAuth(this.username,
-                        this.auth_key).asJson().getBody().getObject();            
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            // TODO - Rename accountArray!
-            JSONArray accountArray = response.getJSONArray("public_keys");
-            for (int i = 0; i < accountArray.length(); i++) {
-                JSONObject row = accountArray.getJSONObject(i);
-                publicKeys.add(new PublicKey(row.getInt("user_id"),
-                        Base64.getDecoder().decode(row.getString("public_key"))));
-            }
-            
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-        return publicKeys.toArray(new PublicKey[publicKeys.size()]);
-    }
-    
-    public int addAccount(int folderId, String name, String username, String password, String notes) throws LockerRuntimeException {              
-        try {
-            Base64.Encoder encoder = Base64.getEncoder();
-            JSONArray accounts = new JSONArray();
-            EncryptedAccount[] encryptedAccounts = this.encryptAccount(folderId, name, username, password, notes);
-            for (EncryptedAccount account : encryptedAccounts) {
-               
-                accounts.put(new JSONObject()
-                        .put("user_id", account.getUserId())
-                        .put("password", new String(encoder.encode(account.getEncryptedPassword())))
-                        .put("account_metadata", new String(encoder.encode(account.getEncryptedMetadata())))
-                        .put("encrypted_aes_key", new String(encoder.encode(account.getEncryptedAesKey()))));
-            }
-            String payload = new JSONObject().put("folder_id", folderId)
-                    .put("encrypted_account_data", accounts).toString();
-            
-            JSONObject response = Unirest.put(this.getUrl("accounts/add")).basicAuth(this.username,
-                    this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
-                            payload).asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            int accountId = response.getInt("account_id");
-            return accountId;
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException(e);
-        }
-    }
-    
-    public void updateAccount(int folderId, int accountId, String name, String username, String password, String notes) throws LockerRuntimeException {              
-        try {
-            Base64.Encoder encoder = Base64.getEncoder();
-            JSONArray accounts = new JSONArray();
-            EncryptedAccount[] encryptedAccounts = this.encryptAccount(folderId, name, username, password, notes);
-            for (EncryptedAccount account : encryptedAccounts) {
-               
-                accounts.put(new JSONObject()
-                        .put("user_id", account.getUserId())
-                        .put("password", new String(encoder.encode(account.getEncryptedPassword())))
-                        .put("account_metadata", new String(encoder.encode(account.getEncryptedMetadata())))
-                        .put("encrypted_aes_key", new String(encoder.encode(account.getEncryptedAesKey()))));
-            }
-            String payload = new JSONObject().put("folder_id", folderId)
-                    .put("encrypted_account_data", accounts).toString();
-            
-            JSONObject response = Unirest.post(this.getUrl("accounts/"+accountId)).basicAuth(this.username,
-                    this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
-                            payload).asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException(e);
-        }
-    }
-    
-    private EncryptedAccount[] encryptAccount(int folderId, String name, String username, String password, String notes) throws LockerRuntimeException {
-        return this.encryptAccount(folderId, name, username, password, notes, null);
-    }
-    
-    private EncryptedAccount encryptAccount(String name, String username, String password, String notes, PublicKey publicKey) throws LockerRuntimeException {
-        return this.encryptAccount(name, username, password, notes, null, new PublicKey[]{publicKey})[0];
-    }
-    
-    private EncryptedAccount[] encryptAccount(int folderId, String name, String username, String password, String notes, ArrayList<Integer> userIds) throws LockerRuntimeException {
-        PublicKey[] publicKeys = this.getFolderPublicKeys(folderId);
-        return this.encryptAccount(name, username, password, notes, userIds, publicKeys);
-    }
-    
-    private EncryptedAccount[] encryptAccount(String name, String username, String password, String notes, ArrayList<Integer> userIds, PublicKey[] publicKeys) throws LockerRuntimeException {
-        byte[] metadataBytes = (new JSONObject()
-                .put("name", name)
-                .put("notes", notes)
-                .put("username", username)).toString().getBytes();
-
-
-        try {
-            ArrayList<EncryptedAccount> encryptedAccounts = new ArrayList<>();
-            for (PublicKey key : publicKeys) {
-                if (userIds == null || userIds.contains(key.getUserId())) {
-                    Crypto.AesKey aesKey = Crypto.generateAesKey();
-                    byte[] encryptedMetadata = Crypto.aesEncrypt(aesKey, metadataBytes);
-                    byte[] encryptedPassword = Crypto.aesEncrypt(aesKey, password.getBytes());
-                    byte[] encryptedAesKey = Crypto.rsaEncryptAesKey(key.getKey(), aesKey);
-
-                    encryptedAccounts.add(new EncryptedAccount(key.getUserId(), encryptedMetadata, encryptedPassword, encryptedAesKey));
-                }
-            }
-            
-            return encryptedAccounts.toArray(new EncryptedAccount[encryptedAccounts.size()]);
-        } catch (Exception e) {
-            throw new LockerRuntimeException(e);
-        }
-    }
-    
-    public Account getAccount(int accountId, byte[] privateKey) throws LockerRuntimeException {
-        try {
-            JSONObject response = Unirest.get(this.getUrl("accounts/"+accountId))
-                    .basicAuth(this.username, this.auth_key).asJson().getBody().getObject();            
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            JSONObject accountObject = response.getJSONObject("account");
-            byte[] encryptedMetadata = Base64.getDecoder().decode(accountObject.getString("account_metadata"));
-            byte[] encryptedAesKey = Base64.getDecoder().decode(accountObject.getString("encrypted_aes_key"));
-            
-            Account account = new Account(accountObject.getInt("id"), encryptedMetadata, encryptedAesKey, privateKey);
-            return account;
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    public String getAccountPassword(int accountId, byte[] privateKey) throws LockerRuntimeException {
-        try {
-            JSONObject response = Unirest.get(this.getUrl("accounts/"+accountId+"/password"))
-                    .basicAuth(this.username, this.auth_key).asJson().getBody().getObject();            
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            JSONObject accountObject = response.getJSONObject("password");
-            byte[] encryptedPassword = Base64.getDecoder().decode(accountObject.getString("encrypted_password"));
-            byte[] encryptedAesKey = Base64.getDecoder().decode(accountObject.getString("encrypted_aes_key"));
-            
-            JSONObject aesKeyParts = new JSONObject(new String(Crypto.rsaDecryptWithPrivateKey(privateKey, encryptedAesKey)));
-
-            String password = new String(Crypto.aesDecrypt(aesKeyParts.getString("key"), aesKeyParts.getString("iv"), encryptedPassword));
-            return password;
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    private EncryptedAesKey[] getEncryptedAesKeys() throws LockerRuntimeException {
-        try {
-            JSONObject response = Unirest.get(this.getUrl("users/self/encrypted_aes_keys"))
-                    .basicAuth(this.username, this.auth_key).asJson().getBody().getObject();            
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            ArrayList<EncryptedAesKey> keys = new ArrayList<>();
-            JSONArray items = response.getJSONArray("encrypted_aes_keys");
-            for (int i = 0; i < items.length(); i++) {
-                JSONObject item = items.getJSONObject(i);
-                byte[] key = Base64.getDecoder().decode(item.getString("encrypted_aes_key"));
-                keys.add(new EncryptedAesKey(item.getInt("account_id"), key));
-            }
-            
-            return keys.toArray(new EncryptedAesKey[keys.size()]);
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    public void changeOwnPassword(User user, String newPassword)  throws LockerRuntimeException {
-        if (newPassword.isEmpty()) {
-            throw new LockerRuntimeException("You must enter a password!");
-        }
-
-        try {
-            Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(newPassword, user.getPrivateKey());
-            
-            String newAuthKey = Crypto.generateAuthKey(newPassword, user.getUsername());
-
-            Base64.Encoder encoder = Base64.getEncoder();
-            
-            String payload = (new JSONObject()
-                    .put("encrypted_private_key", new String(encoder.encode(encryptedPrivateKey.getKey())))
-                    .put("aes_iv", new String(encoder.encode(encryptedPrivateKey.getIv())))
-                    .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
-                    .put("auth_key", newAuthKey)).toString();
-            
-            JSONObject response = Unirest.post(this.getUrl("users/self/update_password")).basicAuth(this.username,
-                    this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
-                            payload).asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
-    }
-    
-    // TODO: Add support for setting folder permissions when adding user - Admins should be granted access to all folders
-    public int addUser(String username, String password, String fullName, String email, boolean isAdmin) throws LockerRuntimeException {
-        Validation.ensureNonEmpty(username, "Username");
-        Validation.ensureNonEmpty(password, "Password");
-        Validation.ensureNonEmpty(fullName, "Full Name");
-        Validation.ensureNonEmpty(email, "Email");
-        
-        try {
-            KeyPair keypair = Crypto.generateRsaKeyPair();
-            Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(password, keypair.getPrivate().getEncoded());
-            String authKey = Crypto.generateAuthKey(password, username);
-            
-            Base64.Encoder encoder = Base64.getEncoder();
-            
-            String payload = (new JSONObject()
-                    .put("encrypted_private_key", new String(encoder.encode(encryptedPrivateKey.getKey())))
-                    .put("aes_iv", new String(encoder.encode(encryptedPrivateKey.getIv())))
-                    .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
-                    .put("public_key", new String(encoder.encode(keypair.getPublic().getEncoded())))
-                    .put("auth_key", authKey)
-                    .put("username", username)
-                    .put("full_name", fullName)
-                    .put("email", email)
-                    .put("admin", isAdmin)).toString();
-            
-            JSONObject response = Unirest.put(this.getUrl("users")).basicAuth(this.username,
-                    this.auth_key).header("accept", "application/json").header("content-type", "application/json").body(
-                            payload).asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            return response.getInt("user_id");
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
+    public String getPassword() {
+        return this.password;
     }
 }
 
