@@ -167,7 +167,7 @@ public class Folder {
         }
     }
     
-    public void updatePermissionsOnServer(byte[] privateKey, FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerRuntimeException {
+    public void updatePermissionsOnServer(FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerRuntimeException {
         Locker locker = Locker.getInstance();
         
         JSONArray json_permissions = new JSONArray();
@@ -194,11 +194,32 @@ public class Folder {
             // This must happen AFTER the folder permissions have been updated!
             PublicKey[] publicKeys = this.getPublicKeysFromServer();
             
+            this.encryptForUsers(newReadUsers, publicKeys);
+            
+        } catch (LockerRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        }
+    }
+    
+    public void encryptForUser(User user) throws LockerRuntimeException {
+        PublicKey[] publicKeys = new PublicKey[]{user.getPublicKey()};
+        ArrayList<Integer> newReadUsers = new ArrayList<>();
+        newReadUsers.add(user.getId());
+        
+        this.encryptForUsers(newReadUsers, publicKeys);
+    }
+    
+    public void encryptForUsers(ArrayList<Integer> newReadUsers, PublicKey[] publicKeys) throws LockerRuntimeException {
+        User currentUser = CurrentUser.getInstance();
+        Locker locker = Locker.getInstance();
+        try {
             if (newReadUsers != null && newReadUsers.size() > 0) {
                 JSONArray encryptedAccounts = new JSONArray();
-                Account[] accounts = this.getAccountsFromServer(privateKey);
+                Account[] accounts = this.getAccountsFromServer(currentUser.getPrivateKey());
                 for (Account a : accounts) {
-                    a.setPassword(a.getPasswordFromServer(privateKey));
+                    a.setPassword(a.getPasswordFromServer(currentUser.getPrivateKey()));
                     // TODO - encryptAccount requests all public keys for a folder every call, cache them somehow as always requesting same?
                     EncryptedAccount[] eas = a.encrypt(newReadUsers, publicKeys);
                     JSONArray ead = new JSONArray();
@@ -213,23 +234,73 @@ public class Folder {
                             .put("account_id", a.getId())
                             .put("encrypted_account_data", ead));
                 }
-                
-                response = locker.makePostRequest("accounts")
+
+                JSONObject response = locker.makePostRequest("accounts")
                         .header("accept", "application/json")
                         .header("content-type", "application/json")
                         .body(encryptedAccounts.toString()).asJson().getBody().getObject();
-            
+
                 if (response.isNull("success")) {
                     throw new LockerRuntimeException(response.getString("message"));
                 }
             }
-            
         } catch (LockerRuntimeException e) {
             throw e;
         } catch (Exception e) {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }
     }
+    
+//    public void encryptForUsers(byte[] privateKey, User[] users) throws LockerRuntimeException {
+//        Account[] accounts = this.getAccountsFromServer(privateKey);
+//        
+//        ArrayList<PublicKey> publicKeyArrayList = new ArrayList<>();
+//        for (User u : users) {
+//            publicKeyArrayList.add(u.getPublicKey());
+//        }
+//        PublicKey[] publicKeys = publicKeyArrayList.toArray(new PublicKey[publicKeyArrayList.size()]);
+//        
+//        JSONArray encryptedAccounts = new JSONArray();
+//        for (Account a : accounts) {
+//            a.setPassword(a.getPasswordFromServer(privateKey));
+//            EncryptedAccount[] eas = a.encrypt(publicKeys);
+//            JSONArray ead = new JSONArray();
+//            for (EncryptedAccount ea : eas) {
+//                ead.put(new JSONObject()
+//                        .put("user_id", ea.getUserId())
+//                        .put("password", new String(Base64.getEncoder().encode(ea.getEncryptedPassword())))
+//                        .put("account_metadata", new String(Base64.getEncoder().encode(ea.getEncryptedMetadata())))
+//                        .put("encrypted_aes_key", new String(Base64.getEncoder().encode(ea.getEncryptedAesKey()))));
+//            }
+//            encryptedAccounts.put(new JSONObject()
+//                    .put("account_id", a.getId())
+//                    .put("encrypted_account_data", ead));
+//        }
+//
+//        response = locker.makePostRequest("accounts")
+//                .header("accept", "application/json")
+//                .header("content-type", "application/json")
+//                .body(encryptedAccounts.toString()).asJson().getBody().getObject();
+//
+//        if (response.isNull("success")) {
+//            throw new LockerRuntimeException(response.getString("message"));
+//        }
+//        
+//        JSONArray accountData = new JSONArray();
+//        for (Account a : accounts) {
+//            a.setPassword(a.getPasswordFromServer(privateKey));
+//            
+//            EncryptedAccount[] eas = a.encrypt(publicKeys);
+//            for (EncryptedAccount ea : eas) {
+//                accountData.put(new JSONObject()
+//                        .put("user_id", ea.getUserId())
+//                        .put("password", new String(Base64.getEncoder().encode(ea.getEncryptedPassword())))
+//                        .put("account_metadata", new String(Base64.getEncoder().encode(ea.getEncryptedMetadata())))
+//                        .put("encrypted_aes_key", new String(Base64.getEncoder().encode(ea.getEncryptedAesKey())))
+//                        .put("account_id", a.getId()));
+//            }
+//        }
+//    }
     
     public PublicKey[] getPublicKeysFromServer() throws LockerRuntimeException {
         Locker locker = Locker.getInstance();

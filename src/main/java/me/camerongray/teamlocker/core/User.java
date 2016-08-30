@@ -5,6 +5,7 @@
  */
 package me.camerongray.teamlocker.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mashape.unirest.http.Unirest;
 import java.security.KeyPair;
 import java.util.Base64;
@@ -19,7 +20,7 @@ public class User {
     private String fullName;
     private String username;
     private String email;
-    private String publicKey;
+    private byte[] publicKey;
     private byte[] encryptedPrivateKey;
     private boolean admin;
     private byte[] pbkdf2Salt;
@@ -71,11 +72,11 @@ public class User {
         this.email = email;
     }
 
-    public String getPublicKey() {
-        return publicKey;
+    public PublicKey getPublicKey() {
+        return new PublicKey(this.id, this.publicKey);
     }
 
-    public void setPublicKey(String publicKey) {
+    public void setPublicKey(byte[] publicKey) {
         this.publicKey = publicKey;
     }
 
@@ -157,8 +158,7 @@ public class User {
             
             // Decrypts the private key
             user.setPrivateKey(Crypto.aesDecrypt(locker.getPassword(), user.getPbkdf2Salt(), user.getAesIv(), user.getEncryptedPrivateKey()));
-            
-            
+                    
             return user;
         } catch (Exception e) {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
@@ -222,7 +222,7 @@ public class User {
     }
     
     // TODO: Add support for setting folder permissions when adding user - Admins should be granted access to all folders
-    public int addToServer() throws LockerRuntimeException {
+    public User addToServer() throws LockerRuntimeException {
         Validation.ensureNonEmpty(this.username, "Username");
         Validation.ensureNonEmpty(this.password, "Password");
         Validation.ensureNonEmpty(this.fullName, "Full Name");
@@ -232,16 +232,21 @@ public class User {
         
         try {
             KeyPair keypair = Crypto.generateRsaKeyPair();
-            Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(this.password, keypair.getPrivate().getEncoded());
+            this.privateKey = keypair.getPrivate().getEncoded();
+            this.publicKey = keypair.getPublic().getEncoded();
+            Crypto.EncryptedPrivateKey epk = Crypto.encryptPrivateKey(this.password, privateKey);
+            this.encryptedPrivateKey = epk.getKey();
+            this.aesIv = epk.getIv();
+            this.pbkdf2Salt = epk.getSalt();
             String authKey = Crypto.generateAuthKey(this.password, this.username);
             
             Base64.Encoder encoder = Base64.getEncoder();
             
             String payload = (new JSONObject()
-                    .put("encrypted_private_key", new String(encoder.encode(encryptedPrivateKey.getKey())))
-                    .put("aes_iv", new String(encoder.encode(encryptedPrivateKey.getIv())))
-                    .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
-                    .put("public_key", new String(encoder.encode(keypair.getPublic().getEncoded())))
+                    .put("encrypted_private_key", new String(encoder.encode(this.encryptedPrivateKey)))
+                    .put("aes_iv", new String(encoder.encode(this.getAesIv())))
+                    .put("pbkdf2_salt", new String(encoder.encode(this.getPbkdf2Salt())))
+                    .put("public_key", new String(encoder.encode(this.publicKey)))
                     .put("auth_key", authKey)
                     .put("username", this.username)
                     .put("full_name", this.fullName)
@@ -257,7 +262,16 @@ public class User {
                 throw new LockerRuntimeException(response.getString("message"));
             }
             
-            return response.getInt("user_id");
+            this.id = response.getInt("user_id");
+            
+            if (this.admin) {
+                Folder[] folders = Folder.getAllFromServer();
+                for (Folder folder : folders) {
+                    folder.encryptForUser(this);
+                }
+            }
+            
+            return this;
         } catch (Exception e) {
             throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
         }

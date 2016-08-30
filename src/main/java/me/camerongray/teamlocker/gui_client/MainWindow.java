@@ -22,6 +22,7 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
+import me.camerongray.teamlocker.core.CurrentUser;
 
 /**
  *
@@ -43,7 +44,7 @@ public class MainWindow extends javax.swing.JFrame {
     public MainWindow() {
         this.locker = Locker.getInstance();
         try {
-            this.user = User.getCurrentFromServer();
+            this.user = CurrentUser.getInstance();
         } catch (LockerRuntimeException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(),
                     "Application Error", JOptionPane.ERROR_MESSAGE);

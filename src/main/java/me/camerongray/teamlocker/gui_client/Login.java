@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import me.camerongray.teamlocker.core.CurrentUser;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerSecurityException;
 import me.camerongray.teamlocker.core.User;
@@ -341,6 +342,7 @@ public class Login extends javax.swing.JFrame {
             btnLogin.setEnabled(true);
             try {
                 this.get();
+                CurrentUser.init();
                 javax.swing.JFrame f = new MainWindow();
                 f.setVisible(true);
                 this.dialog.dispose();

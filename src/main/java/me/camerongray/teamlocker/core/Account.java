@@ -157,11 +157,7 @@ public class Account {
     public EncryptedAccount[] encrypt(Folder folder) throws LockerRuntimeException {
         return this.encrypt(folder, null);
     }
-    
-//    public EncryptedAccount encrypt(String name, String username, String password, String notes, PublicKey publicKey) throws LockerRuntimeException {
-//        return this.encrypt(name, username, password, notes, null, new PublicKey[]{publicKey})[0];
-//    }
-    
+
     public EncryptedAccount[] encrypt(Folder folder, ArrayList<Integer> userIds) throws LockerRuntimeException {
         PublicKey[] publicKeys = folder.getPublicKeysFromServer();
         return this.encrypt(userIds, publicKeys);
@@ -189,8 +185,13 @@ public class Account {
             
             return encryptedAccounts.toArray(new EncryptedAccount[encryptedAccounts.size()]);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new LockerRuntimeException(e);
         }
+    }
+    
+    public EncryptedAccount[] encrypt(PublicKey[] publicKeys) throws LockerRuntimeException {
+        return this.encrypt(null, publicKeys);
     }
     
     public void updateOnServer(Folder folder) throws LockerRuntimeException {      

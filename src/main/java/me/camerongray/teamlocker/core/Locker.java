@@ -150,32 +150,6 @@ class EncryptedAccount {
     }
 }
 
-class PublicKey {
-    private int userId;
-    private byte[] key;
-
-    public PublicKey(int user_id, byte[] key) {
-        this.userId = user_id;
-        this.key = key;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public byte[] getKey() {
-        return key;
-    }
-
-    public void setKey(byte[] key) {
-        this.key = key;
-    }
-}
-
 class EncryptedAesKey {
     private int accountId;
     private byte[] encryptedAesKey;
