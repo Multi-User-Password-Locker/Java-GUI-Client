@@ -251,57 +251,6 @@ public class Folder {
         }
     }
     
-//    public void encryptForUsers(byte[] privateKey, User[] users) throws LockerRuntimeException {
-//        Account[] accounts = this.getAccountsFromServer(privateKey);
-//        
-//        ArrayList<PublicKey> publicKeyArrayList = new ArrayList<>();
-//        for (User u : users) {
-//            publicKeyArrayList.add(u.getPublicKey());
-//        }
-//        PublicKey[] publicKeys = publicKeyArrayList.toArray(new PublicKey[publicKeyArrayList.size()]);
-//        
-//        JSONArray encryptedAccounts = new JSONArray();
-//        for (Account a : accounts) {
-//            a.setPassword(a.getPasswordFromServer(privateKey));
-//            EncryptedAccount[] eas = a.encrypt(publicKeys);
-//            JSONArray ead = new JSONArray();
-//            for (EncryptedAccount ea : eas) {
-//                ead.put(new JSONObject()
-//                        .put("user_id", ea.getUserId())
-//                        .put("password", new String(Base64.getEncoder().encode(ea.getEncryptedPassword())))
-//                        .put("account_metadata", new String(Base64.getEncoder().encode(ea.getEncryptedMetadata())))
-//                        .put("encrypted_aes_key", new String(Base64.getEncoder().encode(ea.getEncryptedAesKey()))));
-//            }
-//            encryptedAccounts.put(new JSONObject()
-//                    .put("account_id", a.getId())
-//                    .put("encrypted_account_data", ead));
-//        }
-//
-//        response = locker.makePostRequest("accounts")
-//                .header("accept", "application/json")
-//                .header("content-type", "application/json")
-//                .body(encryptedAccounts.toString()).asJson().getBody().getObject();
-//
-//        if (response.isNull("success")) {
-//            throw new LockerRuntimeException(response.getString("message"));
-//        }
-//        
-//        JSONArray accountData = new JSONArray();
-//        for (Account a : accounts) {
-//            a.setPassword(a.getPasswordFromServer(privateKey));
-//            
-//            EncryptedAccount[] eas = a.encrypt(publicKeys);
-//            for (EncryptedAccount ea : eas) {
-//                accountData.put(new JSONObject()
-//                        .put("user_id", ea.getUserId())
-//                        .put("password", new String(Base64.getEncoder().encode(ea.getEncryptedPassword())))
-//                        .put("account_metadata", new String(Base64.getEncoder().encode(ea.getEncryptedMetadata())))
-//                        .put("encrypted_aes_key", new String(Base64.getEncoder().encode(ea.getEncryptedAesKey())))
-//                        .put("account_id", a.getId()));
-//            }
-//        }
-//    }
-    
     public PublicKey[] getPublicKeysFromServer() throws LockerRuntimeException {
         Locker locker = Locker.getInstance();
         ArrayList<PublicKey> publicKeys = new ArrayList<>();
