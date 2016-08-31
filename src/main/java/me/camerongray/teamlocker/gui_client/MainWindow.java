@@ -535,7 +535,7 @@ public class MainWindow extends javax.swing.JFrame {
             lblStatus.setText("Ready");
             try {
                 FolderPermission[] permissions = this.get();
-                new EditFolder(this.window, true, this.window.user, this.folder, permissions).setVisible(true);
+                new EditFolder(this.window, true, this.folder, permissions).setVisible(true);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this.window, e.getCause().getMessage(),
                         "Application Error", JOptionPane.ERROR_MESSAGE);

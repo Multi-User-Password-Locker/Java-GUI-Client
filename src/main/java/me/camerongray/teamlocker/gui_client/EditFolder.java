@@ -14,6 +14,8 @@ import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
+import me.camerongray.teamlocker.core.CurrentUser;
+import me.camerongray.teamlocker.core.LockerRuntimeException;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
@@ -31,10 +33,10 @@ public class EditFolder extends javax.swing.JDialog {
     /**
      * Creates new form EditFolder
      */
-    public EditFolder(MainWindow parent, boolean modal, User user, Folder folder, FolderPermission[] permissions) {
+    public EditFolder(MainWindow parent, boolean modal, Folder folder, FolderPermission[] permissions) throws LockerRuntimeException {
         super(parent, modal);
         this.parent = parent;
-        this.user = user;
+        this.user = CurrentUser.getInstance();
         this.locker = Locker.getInstance();
         this.folder = folder;
         initComponents();
