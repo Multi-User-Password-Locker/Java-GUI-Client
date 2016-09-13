@@ -7,6 +7,8 @@ package me.camerongray.teamlocker.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import java.io.IOException;
 import java.security.KeyPair;
 import java.util.Base64;
 import org.json.JSONObject;
@@ -148,43 +150,33 @@ public class User {
         return isCurrentUser;
     }
     
-    public static User getCurrentFromServer() throws LockerRuntimeException {
+    public static User getCurrentFromServer() throws IOException, UnirestException, CryptoException  {
         Locker locker = Locker.getInstance();
-        try {           
-            String response = locker.makeGetRequest("users/self").asJson().getBody().getObject().getJSONObject("user").toString();
-            
-            User user = locker.getObjectMapper().readValue(response, User.class);
-            user.setIsCurrentUser(true);
-            
-            // Decrypts the private key
-            user.setPrivateKey(Crypto.aesDecrypt(locker.getPassword(), user.getPbkdf2Salt(), user.getAesIv(), user.getEncryptedPrivateKey()));
-                    
-            return user;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
-        }
+        String response = locker.makeGetRequest("users/self").asJson().getBody().getObject().getJSONObject("user").toString();
+
+        User user = locker.getObjectMapper().readValue(response, User.class);
+        user.setIsCurrentUser(true);
+
+        // Decrypts the private key
+        user.setPrivateKey(Crypto.aesDecrypt(locker.getPassword(), user.getPbkdf2Salt(), user.getAesIv(), user.getEncryptedPrivateKey()));
+
+        return user;
     }
     
-    public static User[] getAllFromServer() throws LockerRuntimeException {
+    public static User[] getAllFromServer() throws LockerRuntimeException, IOException, UnirestException {
         Locker locker = Locker.getInstance();
-        try {
-            JSONObject response = locker.makeGetRequest("users").asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-                        
-            User[] users = locker.getObjectMapper().readValue(response.getJSONArray("users").toString(), User[].class);
-            
-            return users;
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        JSONObject response = locker.makeGetRequest("users").asJson().getBody().getObject();
+
+        if (!response.isNull("error")) {
+            throw new LockerRuntimeException(response.getString("message"));
         }
+
+        User[] users = locker.getObjectMapper().readValue(response.getJSONArray("users").toString(), User[].class);
+
+        return users;
     }
     
-    public void changePasswordOnServer(String newPassword) throws LockerRuntimeException {
+    public void changePasswordOnServer(String newPassword) throws LockerRuntimeException, CryptoException, UnirestException {
         if (newPassword.isEmpty()) {
             throw new LockerRuntimeException("You must enter a password!");
         }
@@ -195,34 +187,28 @@ public class User {
         
         Locker locker = Locker.getInstance();
 
-        try {
-            Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(newPassword, this.privateKey);
-            
-            String newAuthKey = Crypto.generateAuthKey(newPassword, this.username);
+        Crypto.EncryptedPrivateKey encryptedPrivateKey = Crypto.encryptPrivateKey(newPassword, this.privateKey);
 
-            Base64.Encoder encoder = Base64.getEncoder();
-            
-            String payload = (new JSONObject()
-                    .put("encrypted_private_key", new String(encoder.encode(encryptedPrivateKey.getKey())))
-                    .put("aes_iv", new String(encoder.encode(encryptedPrivateKey.getIv())))
-                    .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
-                    .put("auth_key", newAuthKey)).toString();
-            
-            JSONObject response = locker.makePostRequest("users/self/update_password").header("accept", "application/json").header("content-type", "application/json").body(
-                            payload).asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-        } catch (LockerRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        String newAuthKey = Crypto.generateAuthKey(newPassword, this.username);
+
+        Base64.Encoder encoder = Base64.getEncoder();
+
+        String payload = (new JSONObject()
+                .put("encrypted_private_key", new String(encoder.encode(encryptedPrivateKey.getKey())))
+                .put("aes_iv", new String(encoder.encode(encryptedPrivateKey.getIv())))
+                .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
+                .put("auth_key", newAuthKey)).toString();
+
+        JSONObject response = locker.makePostRequest("users/self/update_password").header("accept", "application/json").header("content-type", "application/json").body(
+                        payload).asJson().getBody().getObject();
+
+        if (!response.isNull("error")) {
+            throw new LockerRuntimeException(response.getString("message"));
         }
     }
     
     // TODO: Add support for setting folder permissions when adding user - Admins should be granted access to all folders
-    public User addToServer() throws LockerRuntimeException {
+    public User addToServer() throws LockerRuntimeException, CryptoException, UnirestException, IOException {
         Validation.ensureNonEmpty(this.username, "Username");
         Validation.ensureNonEmpty(this.password, "Password");
         Validation.ensureNonEmpty(this.fullName, "Full Name");
@@ -230,50 +216,46 @@ public class User {
         
         Locker locker = Locker.getInstance();
         
-        try {
-            KeyPair keypair = Crypto.generateRsaKeyPair();
-            this.privateKey = keypair.getPrivate().getEncoded();
-            this.publicKey = keypair.getPublic().getEncoded();
-            Crypto.EncryptedPrivateKey epk = Crypto.encryptPrivateKey(this.password, privateKey);
-            this.encryptedPrivateKey = epk.getKey();
-            this.aesIv = epk.getIv();
-            this.pbkdf2Salt = epk.getSalt();
-            String authKey = Crypto.generateAuthKey(this.password, this.username);
-            
-            Base64.Encoder encoder = Base64.getEncoder();
-            
-            String payload = (new JSONObject()
-                    .put("encrypted_private_key", new String(encoder.encode(this.encryptedPrivateKey)))
-                    .put("aes_iv", new String(encoder.encode(this.getAesIv())))
-                    .put("pbkdf2_salt", new String(encoder.encode(this.getPbkdf2Salt())))
-                    .put("public_key", new String(encoder.encode(this.publicKey)))
-                    .put("auth_key", authKey)
-                    .put("username", this.username)
-                    .put("full_name", this.fullName)
-                    .put("email", this.email)
-                    .put("admin", this.admin)).toString();
-            
-            JSONObject response = locker.makePutRequest("users")
-                    .header("accept", "application/json")
-                    .header("content-type", "application/json")
-                    .body(payload).asJson().getBody().getObject();
-            
-            if (!response.isNull("error")) {
-                throw new LockerRuntimeException(response.getString("message"));
-            }
-            
-            this.id = response.getInt("user_id");
-            
-            if (this.admin) {
-                Folder[] folders = Folder.getAllFromServer();
-                for (Folder folder : folders) {
-                    folder.encryptForUser(this);
-                }
-            }
-            
-            return this;
-        } catch (Exception e) {
-            throw new LockerRuntimeException("Request Error:\n\n" + e.getMessage());
+        KeyPair keypair = Crypto.generateRsaKeyPair();
+        this.privateKey = keypair.getPrivate().getEncoded();
+        this.publicKey = keypair.getPublic().getEncoded();
+        Crypto.EncryptedPrivateKey epk = Crypto.encryptPrivateKey(this.password, privateKey);
+        this.encryptedPrivateKey = epk.getKey();
+        this.aesIv = epk.getIv();
+        this.pbkdf2Salt = epk.getSalt();
+        String authKey = Crypto.generateAuthKey(this.password, this.username);
+
+        Base64.Encoder encoder = Base64.getEncoder();
+
+        String payload = (new JSONObject()
+                .put("encrypted_private_key", new String(encoder.encode(this.encryptedPrivateKey)))
+                .put("aes_iv", new String(encoder.encode(this.getAesIv())))
+                .put("pbkdf2_salt", new String(encoder.encode(this.getPbkdf2Salt())))
+                .put("public_key", new String(encoder.encode(this.publicKey)))
+                .put("auth_key", authKey)
+                .put("username", this.username)
+                .put("full_name", this.fullName)
+                .put("email", this.email)
+                .put("admin", this.admin)).toString();
+
+        JSONObject response = locker.makePutRequest("users")
+                .header("accept", "application/json")
+                .header("content-type", "application/json")
+                .body(payload).asJson().getBody().getObject();
+
+        if (!response.isNull("error")) {
+            throw new LockerRuntimeException(response.getString("message"));
         }
+
+        this.id = response.getInt("user_id");
+
+        if (this.admin) {
+            Folder[] folders = Folder.getAllFromServer();
+            for (Folder folder : folders) {
+                folder.encryptForUser(this);
+            }
+        }
+
+        return this;
     }
 }

@@ -5,6 +5,9 @@
  */
 package me.camerongray.teamlocker.core;
 
+import com.mashape.unirest.http.exceptions.UnirestException;
+import java.io.IOException;
+
 /**
  *
  * @author camerong
@@ -23,7 +26,7 @@ public class CurrentUser {
         return instance;
     }
     
-    public static void init() throws LockerRuntimeException {
+    public static void init() throws LockerRuntimeException, IOException, UnirestException, CryptoException {
         instance = User.getCurrentFromServer();
     }
 }

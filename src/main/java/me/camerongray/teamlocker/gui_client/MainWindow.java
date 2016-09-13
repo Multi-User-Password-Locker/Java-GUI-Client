@@ -13,6 +13,7 @@ import me.camerongray.teamlocker.core.Account;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.FolderPermission;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -616,7 +617,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         @Override
-        public User[] doInBackground() throws LockerRuntimeException {
+        public User[] doInBackground() throws LockerRuntimeException, IOException, UnirestException {
             User[] users = User.getAllFromServer();
             return users;
         }

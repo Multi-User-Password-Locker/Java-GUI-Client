@@ -103,7 +103,7 @@ public class Folder {
         this.id = response.getInt("folder_id");
     }
     
-    public FolderPermission[] getPermissionsFromServer() throws LockerRuntimeException, UnirestException {
+    public FolderPermission[] getPermissionsFromServer() throws LockerRuntimeException, UnirestException, IOException {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeGetRequest("folders/"+this.id+"/permissions")
                 .asJson().getBody().getObject();

@@ -5,10 +5,13 @@
  */
 package me.camerongray.teamlocker.gui_client;
 
+import com.mashape.unirest.http.exceptions.UnirestException;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import me.camerongray.teamlocker.core.CryptoException;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
 import me.camerongray.teamlocker.core.User;
@@ -297,7 +300,7 @@ public class UserForm extends javax.swing.JDialog {
         }
 
         @Override
-        protected Void doInBackground() throws LockerRuntimeException {
+        protected Void doInBackground() throws LockerRuntimeException, CryptoException, UnirestException, IOException {
             new User(this.fullName, this.username, this.email, this.password, this.isAdmin).addToServer();
             return null;
         }
