@@ -136,11 +136,11 @@ public class Account {
         return accountId;
     }
     
-    public EncryptedAccount[] encrypt(Folder folder) throws LockerRuntimeException, CryptoException {
+    public EncryptedAccount[] encrypt(Folder folder) throws LockerRuntimeException, CryptoException, UnirestException {
         return this.encrypt(folder, null);
     }
 
-    public EncryptedAccount[] encrypt(Folder folder, ArrayList<Integer> userIds) throws LockerRuntimeException, CryptoException {
+    public EncryptedAccount[] encrypt(Folder folder, ArrayList<Integer> userIds) throws LockerRuntimeException, CryptoException, UnirestException {
         PublicKey[] publicKeys = folder.getPublicKeysFromServer();
         return this.encrypt(userIds, publicKeys);
     }

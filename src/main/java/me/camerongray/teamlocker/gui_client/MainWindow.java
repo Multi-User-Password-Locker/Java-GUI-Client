@@ -382,8 +382,8 @@ public class MainWindow extends javax.swing.JFrame {
         try {
             // TODO: Move into SwingWorker?
             new Folder(folderName).addToServer();
-        } catch (LockerRuntimeException e) {
-            Common.handleRuntimeException(this, e);
+        } catch (Exception e) {
+            Common.handleGeneralException(this, e);
             return;
         }
         pgbStatus.setIndeterminate(true);
@@ -413,8 +413,8 @@ public class MainWindow extends javax.swing.JFrame {
         lstFolders.clearSelection();
         try {
             folder.deleteFromServer();
-        } catch (LockerRuntimeException e) {
-            Common.handleRuntimeException(this, e);
+        } catch (Exception e) {
+            Common.handleGeneralException(this, e);
         }
 
         lblStatus.setText("Getting folders...");
@@ -550,7 +550,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         @Override
-        public Account[] doInBackground() throws LockerRuntimeException {
+        public Account[] doInBackground() throws LockerRuntimeException, UnirestException, CryptoException {
             Account[] accounts = this.folder.getAccountsFromServer(this.window.user.getPrivateKey());
             return accounts;
         }

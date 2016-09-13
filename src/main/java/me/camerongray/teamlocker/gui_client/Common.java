@@ -26,11 +26,20 @@ public class Common {
         System.exit(1);
     }
     
-    public static void handleSwingWorkerException(Frame frame, Exception e) {
-        if (e.getCause() instanceof LockerRuntimeException) {
-            Common.handleRuntimeException(frame, (LockerRuntimeException)e.getCause());
+    public static void handleSwingWorkerException(Frame frame, Throwable fullException) {
+        Common.handleGeneralException(frame, fullException, false);
+    }
+    
+    public static void handleGeneralException(Frame frame, Throwable fullException) {
+        Common.handleGeneralException(frame, fullException, false);
+    }
+    
+    public static void handleGeneralException(Frame frame, Throwable fullException, boolean wrapped) {
+        Throwable e = (wrapped) ? fullException.getCause() : fullException;
+        if (e instanceof LockerRuntimeException) {
+            Common.handleRuntimeException(frame, e);
         } else {
-            Common.handleFatalException(frame, e);
+            Common.handleFatalException(frame, fullException);
         }
     }
 }
