@@ -609,8 +609,7 @@ public class MainWindow extends javax.swing.JFrame {
                 Account account = this.get();
                 new AccountForm(window, false, window.user, account, window.selectedFolder).setVisible(true);
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(window, e.getCause().getMessage(),
-                        "Application Error", JOptionPane.ERROR_MESSAGE);
+                Common.handleSwingWorkerException(this.window, e);
             }
         }
     }
