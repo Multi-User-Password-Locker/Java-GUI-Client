@@ -5,6 +5,7 @@
  */
 package me.camerongray.teamlocker.gui_client;
 
+import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 import javax.imageio.ImageIO;
@@ -13,6 +14,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.CurrentUser;
 import me.camerongray.teamlocker.core.Locker;
+import me.camerongray.teamlocker.core.LockerRuntimeException;
 import me.camerongray.teamlocker.core.LockerSecurityException;
 import me.camerongray.teamlocker.core.User;
 
@@ -347,12 +349,10 @@ public class Login extends javax.swing.JFrame {
                 f.setVisible(true);
                 this.dialog.dispose();
             } catch (Exception e) {
-                if (e.getCause() instanceof LockerSecurityException) {
-                    JOptionPane.showMessageDialog(dialog, e.getCause().getMessage(),
-                            "Login Error", JOptionPane.ERROR_MESSAGE);
+                if (e.getCause() instanceof LockerSecurityException || e.getCause() instanceof LockerRuntimeException) {
+                    Common.handleRuntimeException(dialog, e.getCause());
                 } else {
-                    JOptionPane.showMessageDialog(dialog, e.getCause().getMessage(),
-                            "Application Error", JOptionPane.ERROR_MESSAGE);
+                    Common.handleFatalException(dialog, e.getCause());
                 }
             }
         }

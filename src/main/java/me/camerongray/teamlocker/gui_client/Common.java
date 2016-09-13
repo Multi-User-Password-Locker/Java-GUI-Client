@@ -17,7 +17,7 @@ import me.camerongray.teamlocker.core.LockerRuntimeException;
  * @author camerong
  */
 public class Common {
-    public static void handleRuntimeException(Frame frame, LockerRuntimeException e) {
+    public static void handleRuntimeException(Frame frame, Throwable e) {
         JOptionPane.showMessageDialog(frame, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
     }
     
@@ -26,14 +26,10 @@ public class Common {
         System.exit(1);
     }
     
-    public static void handleSwingWorkerException(Frame frame, Exception ex) {
-        // TODO: Check type of exception rather than rethrowing, currenly flying
-        // so no internet connection and can't remember how to do this!
-        try {
-            throw ex.getCause();
-        } catch (LockerRuntimeException e) {
-            Common.handleRuntimeException(frame, e);
-        } catch (Throwable e) {
+    public static void handleSwingWorkerException(Frame frame, Exception e) {
+        if (e.getCause() instanceof LockerRuntimeException) {
+            Common.handleRuntimeException(frame, (LockerRuntimeException)e.getCause());
+        } else {
             Common.handleFatalException(frame, e);
         }
     }
