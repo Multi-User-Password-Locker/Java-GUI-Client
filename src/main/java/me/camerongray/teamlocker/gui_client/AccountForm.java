@@ -5,6 +5,7 @@
  */
 package me.camerongray.teamlocker.gui_client;
 
+import com.mashape.unirest.http.exceptions.UnirestException;
 import me.camerongray.teamlocker.core.User;
 import me.camerongray.teamlocker.core.Folder;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
@@ -14,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import me.camerongray.teamlocker.core.CryptoException;
 
 /**
  *
@@ -374,7 +376,7 @@ public class AccountForm extends javax.swing.JDialog {
         }
         
         @Override
-        public String doInBackground() throws LockerRuntimeException {
+        public String doInBackground() throws LockerRuntimeException, CryptoException, UnirestException {
             String password = this.parent.account.getPasswordFromServer(this.parent.user.getPrivateKey());
             return password;
         }
@@ -410,7 +412,7 @@ public class AccountForm extends javax.swing.JDialog {
         }
         
         @Override
-        public Void doInBackground() throws LockerRuntimeException {
+        public Void doInBackground() throws LockerRuntimeException, UnirestException, CryptoException {
             if (this.parent.mode == AccountForm.NEW_MODE) {
                 Account account = new Account(this.parent.txtAccountName.getText(), this.parent.txtUsername.getText(),
                         this.parent.txtNotes.getText(), new String(this.parent.txtPassword.getPassword()));
@@ -460,7 +462,7 @@ public class AccountForm extends javax.swing.JDialog {
         }
         
         @Override
-        public Void doInBackground() throws LockerRuntimeException {
+        public Void doInBackground() throws LockerRuntimeException, UnirestException {
             this.parent.account.deleteFromServer();
             return null;
         }
