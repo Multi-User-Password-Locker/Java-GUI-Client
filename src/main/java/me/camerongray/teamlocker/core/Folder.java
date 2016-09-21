@@ -5,8 +5,6 @@
  */
 package me.camerongray.teamlocker.core;
 
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -78,24 +76,20 @@ public class Folder {
         return this.name;
     }
     
-    public static Folder[] getAllFromServer() throws UnirestException, IOException {
+    public static Folder[] getAllFromServer() throws LockerCommunicationException, IOException {
         Locker locker = Locker.getInstance();
-        String response = locker.makeGetRequest("folders").asJson().getBody()
-                .getObject().getJSONArray("folders").toString();
+        String response = locker.makeGetRequest("folders").getJSONArray("folders").toString();
 
         Folder[] folders = locker.getObjectMapper().readValue(response, Folder[].class);
         return folders;
     }
     
-    public void addToServer() throws LockerRuntimeException, UnirestException {
+    public void addToServer() throws LockerRuntimeException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         
         String payload = new JSONObject().put("name", this.name).toString();
 
-        JSONObject response = locker.makePutRequest("folders")
-                .header("accept", "application/json")
-                .header("content-type", "application/json").body(
-                        payload).asJson().getBody().getObject();
+        JSONObject response = locker.makePutRequest("folders", payload);
         if (response.isNull("success")) {
             throw new LockerRuntimeException(response.getString("message"));
         }
@@ -103,10 +97,9 @@ public class Folder {
         this.id = response.getInt("folder_id");
     }
     
-    public FolderPermission[] getPermissionsFromServer() throws LockerRuntimeException, UnirestException, IOException {
+    public FolderPermission[] getPermissionsFromServer() throws LockerRuntimeException, LockerCommunicationException, IOException {
         Locker locker = Locker.getInstance();
-        JSONObject response = locker.makeGetRequest("folders/"+this.id+"/permissions")
-                .asJson().getBody().getObject();
+        JSONObject response = locker.makeGetRequest("folders/"+this.id+"/permissions");
 
 
         if (!response.isNull("error")) {
@@ -136,17 +129,16 @@ public class Folder {
         return folderPermissions.toArray(new FolderPermission[folderPermissions.size()]);
     }
     
-    public void deleteFromServer() throws LockerRuntimeException, UnirestException {
+    public void deleteFromServer() throws LockerRuntimeException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
-        JSONObject response = locker.makeDeleteRequest("folders/delete/"+this.id)
-                .asJson().getBody().getObject();
+        JSONObject response = locker.makeDeleteRequest("folders/delete/"+this.id);
 
         if (response.isNull("success")) {
             throw new LockerRuntimeException(response.getString("message"));
         }
     }
     
-    public void updatePermissionsOnServer(FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerRuntimeException, UnirestException, CryptoException {
+    public void updatePermissionsOnServer(FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerRuntimeException, LockerCommunicationException, CryptoException {
         Locker locker = Locker.getInstance();
         
         JSONArray json_permissions = new JSONArray();
@@ -160,10 +152,7 @@ public class Folder {
 
         JSONObject payload = new JSONObject();
         payload.put("permissions", json_permissions);
-        JSONObject response = locker.makePostRequest("folders/" + this.id + "/permissions")
-                .header("accept", "application/json")
-                .header("content-type", "application/json")
-                .body(payload.toString()).asJson().getBody().getObject();
+        JSONObject response = locker.makePostRequest("folders/" + this.id + "/permissions", payload.toString());
 
         if (response.isNull("success")) {
             throw new LockerRuntimeException(response.getString("message"));
@@ -175,7 +164,7 @@ public class Folder {
         this.encryptForUsers(newReadUsers, publicKeys);
     }
     
-    public void encryptForUser(User user) throws LockerRuntimeException, CryptoException, UnirestException {
+    public void encryptForUser(User user) throws LockerRuntimeException, CryptoException, LockerCommunicationException {
         PublicKey[] publicKeys = new PublicKey[]{user.getPublicKey()};
         ArrayList<Integer> newReadUsers = new ArrayList<>();
         newReadUsers.add(user.getId());
@@ -183,7 +172,7 @@ public class Folder {
         this.encryptForUsers(newReadUsers, publicKeys);
     }
     
-    public void encryptForUsers(ArrayList<Integer> newReadUsers, PublicKey[] publicKeys) throws LockerRuntimeException, CryptoException, UnirestException {
+    public void encryptForUsers(ArrayList<Integer> newReadUsers, PublicKey[] publicKeys) throws LockerRuntimeException, CryptoException, LockerCommunicationException {
         User currentUser = CurrentUser.getInstance();
         Locker locker = Locker.getInstance();
         if (newReadUsers != null && newReadUsers.size() > 0) {
@@ -206,10 +195,7 @@ public class Folder {
                         .put("encrypted_account_data", ead));
             }
 
-            JSONObject response = locker.makePostRequest("accounts")
-                    .header("accept", "application/json")
-                    .header("content-type", "application/json")
-                    .body(encryptedAccounts.toString()).asJson().getBody().getObject();
+            JSONObject response = locker.makePostRequest("accounts", encryptedAccounts.toString());
 
             if (response.isNull("success")) {
                 throw new LockerRuntimeException(response.getString("message"));
@@ -217,11 +203,10 @@ public class Folder {
         }
     }
     
-    public PublicKey[] getPublicKeysFromServer() throws LockerRuntimeException, UnirestException {
+    public PublicKey[] getPublicKeysFromServer() throws LockerRuntimeException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         ArrayList<PublicKey> publicKeys = new ArrayList<>();
-        JSONObject response = locker.makeGetRequest("folders/"+this.id+"/public_keys")
-                .asJson().getBody().getObject();            
+        JSONObject response = locker.makeGetRequest("folders/"+this.id+"/public_keys");            
 
         if (!response.isNull("error")) {
             throw new LockerRuntimeException(response.getString("message"));
@@ -237,12 +222,11 @@ public class Folder {
         return publicKeys.toArray(new PublicKey[publicKeys.size()]);
     }
     
-    public Account[] getAccountsFromServer(byte[] privateKey) throws LockerRuntimeException, UnirestException, CryptoException {
+    public Account[] getAccountsFromServer(byte[] privateKey) throws LockerRuntimeException, LockerCommunicationException, CryptoException {
         Locker locker = Locker.getInstance();
         ArrayList<Account> accounts = new ArrayList<>();
         
-        JSONObject response = locker.makeGetRequest("folders/"+this.id+"/accounts")
-                .asJson().getBody().getObject();            
+        JSONObject response = locker.makeGetRequest("folders/"+this.id+"/accounts");            
 
         if (!response.isNull("error")) {
             throw new LockerRuntimeException(response.getString("message"));
@@ -259,14 +243,11 @@ public class Folder {
         return accounts.toArray(new Account[accounts.size()]);
     }
     
-    public void updateOnServer() throws LockerRuntimeException, UnirestException {
+    public void updateOnServer() throws LockerRuntimeException, LockerCommunicationException {
         JSONObject payload = new JSONObject();
         payload.put("name", this.name);
         Locker locker = Locker.getInstance();
-        JSONObject response = locker.makePostRequest("folders/" + this.id + "/save")
-                .header("accept", "application/json")
-                .header("content-type", "application/json")
-                .body(payload.toString()).asJson().getBody().getObject();
+        JSONObject response = locker.makePostRequest("folders/" + this.id + "/save", payload.toString());
 
         if (response.isNull("success")) {
             throw new LockerRuntimeException(response.getString("message"));

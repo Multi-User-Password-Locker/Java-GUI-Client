@@ -11,8 +11,9 @@ import org.json.JSONObject;
 import org.apache.http.client.utils.URIBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.mashape.unirest.request.GetRequest;
-import com.mashape.unirest.request.HttpRequestWithBody;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -65,23 +66,46 @@ public class Locker {
         return u.toString();
     }
     
-    public GetRequest makeGetRequest(String url) {
-        return Unirest.get(this.getUrl(url)).basicAuth(this.username,
-                this.auth_key);
+    public JSONObject makeGetRequest(String url) throws LockerCommunicationException {
+        try {
+            return Unirest.get(this.getUrl(url)).basicAuth(this.username,
+                    this.auth_key).asJson().getBody().getObject();
+        } catch (UnirestException e) {
+            throw new LockerCommunicationException(e);
+        }
     }
     
-    public HttpRequestWithBody makePostRequest(String url) {
-        return Unirest.post(this.getUrl(url)).basicAuth(this.username,
-                this.auth_key);
+    public JSONObject makePostRequest(String url, String payload) throws LockerCommunicationException {
+        try {
+            return Unirest.post(this.getUrl(url))
+                    .basicAuth(this.username, this.auth_key)
+                    .header("accept", "application/json")
+                    .header("content-type", "application/json")
+                    .body(payload).asJson().getBody().getObject();
+        } catch (UnirestException e) {
+            throw new LockerCommunicationException(e);
+        }
     }
     
-    public HttpRequestWithBody makePutRequest(String url) {
-        return Unirest.put(this.getUrl(url)).basicAuth(this.username,
-                this.auth_key);
+    public JSONObject makePutRequest(String url, String payload) throws LockerCommunicationException {
+        try {
+            return Unirest.put(this.getUrl(url))
+                    .basicAuth(this.username, this.auth_key)
+                    .header("accept", "application/json")
+                    .header("content-type", "application/json")
+                    .body(payload).asJson().getBody().getObject();
+        } catch (UnirestException e) {
+            throw new LockerCommunicationException(e);
+        }
     }
-    public HttpRequestWithBody makeDeleteRequest(String url) {
-        return Unirest.delete(this.getUrl(url)).basicAuth(this.username,
-                this.auth_key);
+    public JSONObject makeDeleteRequest(String url) throws LockerCommunicationException {
+        try {
+            return Unirest.delete(this.getUrl(url))
+                    .basicAuth(this.username, this.auth_key)
+                    .asJson().getBody().getObject();
+        } catch (UnirestException e) {
+            throw new LockerCommunicationException(e);
+        }
     }
 
     public boolean checkAuth() throws LockerRuntimeException {

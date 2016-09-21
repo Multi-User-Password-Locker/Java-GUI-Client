@@ -5,7 +5,6 @@
  */
 package me.camerongray.teamlocker.gui_client;
 
-import com.mashape.unirest.http.exceptions.UnirestException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.CryptoException;
 import me.camerongray.teamlocker.core.Locker;
+import me.camerongray.teamlocker.core.LockerCommunicationException;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
 import me.camerongray.teamlocker.core.User;
 
@@ -211,7 +211,7 @@ public class ChangePassword extends javax.swing.JDialog {
         }
         
         @Override
-        public Void doInBackground() throws LockerRuntimeException, CryptoException, UnirestException {
+        public Void doInBackground() throws LockerRuntimeException, CryptoException, LockerCommunicationException {
             this.user.changePasswordOnServer(this.newPassword);
             return null;
         }

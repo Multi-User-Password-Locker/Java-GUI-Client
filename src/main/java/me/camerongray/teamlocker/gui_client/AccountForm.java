@@ -5,7 +5,6 @@
  */
 package me.camerongray.teamlocker.gui_client;
 
-import com.mashape.unirest.http.exceptions.UnirestException;
 import me.camerongray.teamlocker.core.User;
 import me.camerongray.teamlocker.core.Folder;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
@@ -16,6 +15,7 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.CryptoException;
+import me.camerongray.teamlocker.core.LockerCommunicationException;
 
 /**
  *
@@ -376,7 +376,7 @@ public class AccountForm extends javax.swing.JDialog {
         }
         
         @Override
-        public String doInBackground() throws LockerRuntimeException, CryptoException, UnirestException {
+        public String doInBackground() throws LockerRuntimeException, CryptoException, LockerCommunicationException {
             String password = this.parent.account.getPasswordFromServer(this.parent.user.getPrivateKey());
             return password;
         }
@@ -412,7 +412,7 @@ public class AccountForm extends javax.swing.JDialog {
         }
         
         @Override
-        public Void doInBackground() throws LockerRuntimeException, UnirestException, CryptoException {
+        public Void doInBackground() throws LockerRuntimeException, LockerCommunicationException, CryptoException {
             if (this.parent.mode == AccountForm.NEW_MODE) {
                 Account account = new Account(this.parent.txtAccountName.getText(), this.parent.txtUsername.getText(),
                         this.parent.txtNotes.getText(), new String(this.parent.txtPassword.getPassword()));
@@ -462,7 +462,7 @@ public class AccountForm extends javax.swing.JDialog {
         }
         
         @Override
-        public Void doInBackground() throws LockerRuntimeException, UnirestException {
+        public Void doInBackground() throws LockerRuntimeException, LockerCommunicationException {
             this.parent.account.deleteFromServer();
             return null;
         }

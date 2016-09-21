@@ -5,7 +5,6 @@
  */
 package me.camerongray.teamlocker.gui_client;
 
-import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 import javax.imageio.ImageIO;

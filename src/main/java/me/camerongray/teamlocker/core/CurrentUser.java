@@ -5,7 +5,6 @@
  */
 package me.camerongray.teamlocker.core;
 
-import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.IOException;
 
 /**
@@ -26,7 +25,7 @@ public class CurrentUser {
         return instance;
     }
     
-    public static void init() throws LockerRuntimeException, IOException, UnirestException, CryptoException {
+    public static void init() throws LockerRuntimeException, IOException, LockerCommunicationException, CryptoException {
         instance = User.getCurrentFromServer();
     }
 }

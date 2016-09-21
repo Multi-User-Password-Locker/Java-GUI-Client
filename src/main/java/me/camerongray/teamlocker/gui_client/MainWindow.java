@@ -5,7 +5,6 @@
  */
 package me.camerongray.teamlocker.gui_client;
 
-import com.mashape.unirest.http.exceptions.UnirestException;
 import me.camerongray.teamlocker.core.Folder;
 import me.camerongray.teamlocker.core.User;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
@@ -26,6 +25,7 @@ import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import me.camerongray.teamlocker.core.CryptoException;
 import me.camerongray.teamlocker.core.CurrentUser;
+import me.camerongray.teamlocker.core.LockerCommunicationException;
 
 /**
  *
@@ -551,7 +551,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         @Override
-        public Account[] doInBackground() throws LockerRuntimeException, UnirestException, CryptoException {
+        public Account[] doInBackground() throws LockerRuntimeException, CryptoException, LockerCommunicationException {
             Account[] accounts = this.folder.getAccountsFromServer(this.window.user.getPrivateKey());
             return accounts;
         }
@@ -590,7 +590,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         @Override
-        public Account doInBackground() throws LockerRuntimeException, CryptoException, UnirestException {
+        public Account doInBackground() throws LockerRuntimeException, CryptoException, LockerCommunicationException {
             Account account = Account.getFromServer(accountId, user.getPrivateKey());
             return account;
         }
@@ -617,7 +617,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         @Override
-        public User[] doInBackground() throws LockerRuntimeException, IOException, UnirestException {
+        public User[] doInBackground() throws LockerRuntimeException, IOException, LockerCommunicationException {
             User[] users = User.getAllFromServer();
             return users;
         }

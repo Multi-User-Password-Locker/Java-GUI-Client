@@ -5,9 +5,6 @@
  */
 package me.camerongray.teamlocker.core;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.util.Base64;
@@ -150,9 +147,9 @@ public class User {
         return isCurrentUser;
     }
     
-    public static User getCurrentFromServer() throws IOException, UnirestException, CryptoException  {
+    public static User getCurrentFromServer() throws IOException, LockerCommunicationException, CryptoException  {
         Locker locker = Locker.getInstance();
-        String response = locker.makeGetRequest("users/self").asJson().getBody().getObject().getJSONObject("user").toString();
+        String response = locker.makeGetRequest("users/self").getJSONObject("user").toString();
 
         User user = locker.getObjectMapper().readValue(response, User.class);
         user.setIsCurrentUser(true);
@@ -163,9 +160,9 @@ public class User {
         return user;
     }
     
-    public static User[] getAllFromServer() throws LockerRuntimeException, IOException, UnirestException {
+    public static User[] getAllFromServer() throws LockerRuntimeException, IOException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
-        JSONObject response = locker.makeGetRequest("users").asJson().getBody().getObject();
+        JSONObject response = locker.makeGetRequest("users");
 
         if (!response.isNull("error")) {
             throw new LockerRuntimeException(response.getString("message"));
@@ -176,7 +173,7 @@ public class User {
         return users;
     }
     
-    public void changePasswordOnServer(String newPassword) throws LockerRuntimeException, CryptoException, UnirestException {
+    public void changePasswordOnServer(String newPassword) throws LockerRuntimeException, CryptoException, LockerCommunicationException {
         if (newPassword.isEmpty()) {
             throw new LockerRuntimeException("You must enter a password!");
         }
@@ -199,8 +196,7 @@ public class User {
                 .put("pbkdf2_salt", new String(encoder.encode(encryptedPrivateKey.getSalt())))
                 .put("auth_key", newAuthKey)).toString();
 
-        JSONObject response = locker.makePostRequest("users/self/update_password").header("accept", "application/json").header("content-type", "application/json").body(
-                        payload).asJson().getBody().getObject();
+        JSONObject response = locker.makePostRequest("users/self/update_password", payload);
 
         if (!response.isNull("error")) {
             throw new LockerRuntimeException(response.getString("message"));
@@ -208,7 +204,7 @@ public class User {
     }
     
     // TODO: Add support for setting folder permissions when adding user - Admins should be granted access to all folders
-    public User addToServer() throws LockerRuntimeException, CryptoException, UnirestException, IOException {
+    public User addToServer() throws LockerRuntimeException, CryptoException, IOException, LockerCommunicationException {
         Validation.ensureNonEmpty(this.username, "Username");
         Validation.ensureNonEmpty(this.password, "Password");
         Validation.ensureNonEmpty(this.fullName, "Full Name");
@@ -238,10 +234,7 @@ public class User {
                 .put("email", this.email)
                 .put("admin", this.admin)).toString();
 
-        JSONObject response = locker.makePutRequest("users")
-                .header("accept", "application/json")
-                .header("content-type", "application/json")
-                .body(payload).asJson().getBody().getObject();
+        JSONObject response = locker.makePutRequest("users", payload);
 
         if (!response.isNull("error")) {
             throw new LockerRuntimeException(response.getString("message"));
