@@ -349,7 +349,7 @@ public class Login extends javax.swing.JFrame {
                 this.dialog.dispose();
             } catch (Exception e) {
                 if (e.getCause() instanceof LockerSecurityException || e.getCause() instanceof LockerRuntimeException) {
-                    Common.handleRuntimeException(dialog, e.getCause());
+                    Common.handleNonFatalException(dialog, e.getCause());
                 } else {
                     Common.handleFatalException(dialog, e.getCause());
                 }

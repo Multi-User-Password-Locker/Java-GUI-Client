@@ -9,7 +9,7 @@ package me.camerongray.teamlocker.core;
  *
  * @author camerong
  */
-public class LockerCommunicationException extends Exception {
+public class LockerCommunicationException extends LockerNonFatalException {
     public LockerCommunicationException(String message) {
         super(message);
     }

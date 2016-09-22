@@ -231,7 +231,7 @@ public class Folder {
         if (!response.isNull("error")) {
             throw new LockerRuntimeException(response.getString("message"));
         }
-
+        
         JSONArray accountArray = response.getJSONArray("accounts");
         for (int i = 0; i < accountArray.length(); i++) {
             JSONObject accountObject = accountArray.getJSONObject(i);
