@@ -49,7 +49,7 @@ public class MainWindow extends javax.swing.JFrame {
         try {
             this.user = CurrentUser.getInstance();
         } catch (Exception e) {
-            Common.handleFatalException(this, e);
+            ExceptionHandling.handleFatalException(this, e);
             this.dispose();
         }
         initComponents();
@@ -384,7 +384,7 @@ public class MainWindow extends javax.swing.JFrame {
             // TODO: Move into SwingWorker?
             new Folder(folderName).addToServer();
         } catch (Exception e) {
-            Common.handleGeneralException(this, e);
+            ExceptionHandling.handleGeneralException(this, e);
             return;
         }
         pgbStatus.setIndeterminate(true);
@@ -415,7 +415,7 @@ public class MainWindow extends javax.swing.JFrame {
         try {
             folder.deleteFromServer();
         } catch (Exception e) {
-            Common.handleGeneralException(this, e);
+            ExceptionHandling.handleGeneralException(this, e);
         }
 
         lblStatus.setText("Getting folders...");
@@ -507,7 +507,7 @@ public class MainWindow extends javax.swing.JFrame {
                 }
                 lstFolders.setModel(model);
             } catch (Exception e) {
-                Common.handleSwingWorkerException(window, e);
+                ExceptionHandling.handleSwingWorkerException(window, e);
             }
         }
     }
@@ -535,7 +535,7 @@ public class MainWindow extends javax.swing.JFrame {
                 FolderPermission[] permissions = this.get();
                 new EditFolder(this.window, true, this.folder, permissions).setVisible(true);
             } catch (Exception e) {
-                Common.handleSwingWorkerException(window, e);
+                ExceptionHandling.handleSwingWorkerException(window, e);
             }
         }
     }
@@ -574,7 +574,7 @@ public class MainWindow extends javax.swing.JFrame {
                     rowNum++;
                 }
             } catch (Exception e) {
-                Common.handleSwingWorkerException(window, e);
+                ExceptionHandling.handleSwingWorkerException(window, e);
             }
         }
     }
@@ -603,7 +603,7 @@ public class MainWindow extends javax.swing.JFrame {
                 Account account = this.get();
                 new AccountForm(window, false, window.user, account, window.selectedFolder).setVisible(true);
             } catch (Exception e) {
-                Common.handleSwingWorkerException(this.window, e);
+                ExceptionHandling.handleSwingWorkerException(this.window, e);
             }
         }
     }
@@ -630,7 +630,7 @@ public class MainWindow extends javax.swing.JFrame {
                 User[] users = get();
                 (new UserIndex(this.window, true, users)).setVisible(true);
             } catch (Exception e) {
-                Common.handleSwingWorkerException(window, e);
+                ExceptionHandling.handleSwingWorkerException(window, e);
             }
         }
     }

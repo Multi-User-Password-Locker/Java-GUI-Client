@@ -222,7 +222,7 @@ public class ChangePassword extends javax.swing.JDialog {
             try {
                 get();
             } catch (Exception e) {
-                Common.handleSwingWorkerException(parent, e);
+                ExceptionHandling.handleSwingWorkerException(parent, e);
                 return;
             }
             JOptionPane.showMessageDialog(this.dialog, "Password updated successfully!  You will now be logged out.",

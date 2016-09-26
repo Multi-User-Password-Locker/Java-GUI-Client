@@ -13,7 +13,7 @@ import me.camerongray.teamlocker.core.LockerNonFatalException;
  *
  * @author camerong
  */
-public class Common {
+public class ExceptionHandling {
     public static void handleNonFatalException(Frame frame, Throwable e) {
         JOptionPane.showMessageDialog(frame, e.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
     }
@@ -24,19 +24,19 @@ public class Common {
     }
     
     public static void handleSwingWorkerException(Frame frame, Throwable fullException) {
-        Common.handleGeneralException(frame, fullException.getCause(), false);
+        ExceptionHandling.handleGeneralException(frame, fullException.getCause(), false);
     }
     
     public static void handleGeneralException(Frame frame, Throwable fullException) {
-        Common.handleGeneralException(frame, fullException, false);
+        ExceptionHandling.handleGeneralException(frame, fullException, false);
     }
     
     public static void handleGeneralException(Frame frame, Throwable fullException, boolean wrapped) {
         Throwable e = (wrapped) ? fullException.getCause() : fullException;
         if (e.getClass().getSuperclass().equals(LockerNonFatalException.class)) {
-            Common.handleNonFatalException(frame, e);
+            ExceptionHandling.handleNonFatalException(frame, e);
         } else {
-            Common.handleFatalException(frame, fullException);
+            ExceptionHandling.handleFatalException(frame, fullException);
         }
     }
 }
