@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.CurrentUser;
 import me.camerongray.teamlocker.core.Locker;
+import me.camerongray.teamlocker.core.LockerCommunicationException;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
 import me.camerongray.teamlocker.core.LockerSecurityException;
 import me.camerongray.teamlocker.core.User;
@@ -309,7 +310,7 @@ public class Login extends javax.swing.JFrame {
         }
 
         @Override
-        public Void doInBackground() throws Exception {
+        public Void doInBackground() throws LockerSecurityException, LockerRuntimeException, LockerCommunicationException {
             Locker locker = Locker.getInstance();
             locker.init(hostname, port, username, password);
 
@@ -348,11 +349,7 @@ public class Login extends javax.swing.JFrame {
                 f.setVisible(true);
                 this.dialog.dispose();
             } catch (Exception e) {
-                if (e.getCause() instanceof LockerSecurityException || e.getCause() instanceof LockerRuntimeException) {
-                    ExceptionHandling.handleNonFatalException(dialog, e.getCause());
-                } else {
-                    ExceptionHandling.handleFatalException(dialog, e.getCause());
-                }
+                ExceptionHandling.handleSwingWorkerException(dialog, e);
             }
         }
     }

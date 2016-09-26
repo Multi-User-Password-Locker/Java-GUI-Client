@@ -9,12 +9,12 @@ package me.camerongray.teamlocker.gui_client;
  *
  * @author camerong
  */
-public class FatalErrorDialog extends javax.swing.JDialog {
+public class ErrorDetailsDialog extends javax.swing.JDialog {
 
     /**
-     * Creates new form FatalErrorDialog
+     * Creates new form ErrorDetailsDialog
      */
-    public FatalErrorDialog(java.awt.Frame parent, Throwable ex) {
+    public ErrorDetailsDialog(java.awt.Frame parent, Throwable ex) {
         super(parent, true);
         initComponents();
         
@@ -38,7 +38,6 @@ public class FatalErrorDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         btnClose = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
         jSplitPane1 = new javax.swing.JSplitPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtMessage = new javax.swing.JTextArea();
@@ -48,7 +47,7 @@ public class FatalErrorDialog extends javax.swing.JDialog {
         txtStackTrace = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("A Fatal Error has Occurred!");
+        setTitle("Error Details");
         setLocationByPlatform(true);
 
         btnClose.setText("Close");
@@ -57,8 +56,6 @@ public class FatalErrorDialog extends javax.swing.JDialog {
                 btnCloseActionPerformed(evt);
             }
         });
-
-        jLabel3.setText("Closing this dialog will exit TeamLocker");
 
         jSplitPane1.setDividerLocation(100);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -104,12 +101,9 @@ public class FatalErrorDialog extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jSplitPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnClose)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnClose))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -118,9 +112,7 @@ public class FatalErrorDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 449, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnClose)
-                    .addComponent(jLabel3))
+                .addComponent(btnClose)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -134,7 +126,6 @@ public class FatalErrorDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

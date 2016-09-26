@@ -49,7 +49,7 @@ public class MainWindow extends javax.swing.JFrame {
         try {
             this.user = CurrentUser.getInstance();
         } catch (Exception e) {
-            ExceptionHandling.handleFatalException(this, e);
+            ExceptionHandling.handleException(this, e);
             this.dispose();
         }
         initComponents();
@@ -384,7 +384,7 @@ public class MainWindow extends javax.swing.JFrame {
             // TODO: Move into SwingWorker?
             new Folder(folderName).addToServer();
         } catch (Exception e) {
-            ExceptionHandling.handleGeneralException(this, e);
+            ExceptionHandling.handleException(this, e);
             return;
         }
         pgbStatus.setIndeterminate(true);
@@ -415,7 +415,7 @@ public class MainWindow extends javax.swing.JFrame {
         try {
             folder.deleteFromServer();
         } catch (Exception e) {
-            ExceptionHandling.handleGeneralException(this, e);
+            ExceptionHandling.handleException(this, e);
         }
 
         lblStatus.setText("Getting folders...");

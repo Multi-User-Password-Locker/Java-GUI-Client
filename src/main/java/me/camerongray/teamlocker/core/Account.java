@@ -199,6 +199,8 @@ public class Account {
             throw new LockerRuntimeException(response.getString("message"));
         }
 
+        int foo = 1/0; 
+        
         JSONObject accountObject = response.getJSONObject("account");
         byte[] encryptedMetadata = Base64.getDecoder().decode(accountObject.getString("account_metadata"));
         byte[] encryptedAesKey = Base64.getDecoder().decode(accountObject.getString("encrypted_aes_key"));
