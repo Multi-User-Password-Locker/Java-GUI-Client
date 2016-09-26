@@ -198,8 +198,6 @@ public class Account {
         if (!response.isNull("error")) {
             throw new LockerRuntimeException(response.getString("message"));
         }
-
-        int foo = 1/0; 
         
         JSONObject accountObject = response.getJSONObject("account");
         byte[] encryptedMetadata = Base64.getDecoder().decode(accountObject.getString("account_metadata"));
