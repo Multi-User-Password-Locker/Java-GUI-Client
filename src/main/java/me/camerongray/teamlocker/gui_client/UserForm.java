@@ -13,6 +13,7 @@ import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.CryptoException;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
+import me.camerongray.teamlocker.core.LockerRemoteException;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
 import me.camerongray.teamlocker.core.User;
 import me.camerongray.teamlocker.core.Validation;
@@ -300,7 +301,7 @@ public class UserForm extends javax.swing.JDialog {
         }
 
         @Override
-        protected Void doInBackground() throws LockerRuntimeException, CryptoException, LockerCommunicationException, IOException {
+        protected Void doInBackground() throws LockerRemoteException, CryptoException, LockerCommunicationException, IOException, LockerRuntimeException {
             new User(this.fullName, this.username, this.email, this.password, this.isAdmin).addToServer();
             return null;
         }

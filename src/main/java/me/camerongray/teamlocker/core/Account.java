@@ -80,21 +80,21 @@ public class Account {
         this.password = password;
     }
     
-    public void deleteFromServer() throws LockerRuntimeException, LockerCommunicationException {
+    public void deleteFromServer() throws LockerRemoteException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeDeleteRequest("accounts/"+this.id);
 
         if (response.isNull("success")) {
-            throw new LockerRuntimeException(response.getString("message"));
+            throw new LockerRemoteException(response.getString("message"));
         }
     }
     
-    public String getPasswordFromServer(byte[] privateKey) throws LockerRuntimeException, CryptoException, LockerCommunicationException {
+    public String getPasswordFromServer(byte[] privateKey) throws LockerRemoteException, CryptoException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeGetRequest("accounts/"+this.id+"/password");            
 
         if (!response.isNull("error")) {
-            throw new LockerRuntimeException(response.getString("message"));
+            throw new LockerRemoteException(response.getString("message"));
         }
 
         JSONObject accountObject = response.getJSONObject("password");
@@ -107,7 +107,7 @@ public class Account {
         return password;
     }
     
-    public int addToServer(Folder folder) throws LockerRuntimeException, CryptoException, LockerCommunicationException {    
+    public int addToServer(Folder folder) throws LockerRemoteException, CryptoException, LockerCommunicationException, LockerRuntimeException {    
         Locker locker = Locker.getInstance();
         Base64.Encoder encoder = Base64.getEncoder();
         JSONArray accounts = new JSONArray();
@@ -126,23 +126,23 @@ public class Account {
         JSONObject response = locker.makePutRequest("accounts/add", payload);
 
         if (!response.isNull("error")) {
-            throw new LockerRuntimeException(response.getString("message"));
+            throw new LockerRemoteException(response.getString("message"));
         }
 
         int accountId = response.getInt("account_id");
         return accountId;
     }
     
-    public EncryptedAccount[] encrypt(Folder folder) throws LockerRuntimeException, CryptoException, LockerCommunicationException {
+    public EncryptedAccount[] encrypt(Folder folder) throws LockerRemoteException, CryptoException, LockerCommunicationException {
         return this.encrypt(folder, null);
     }
 
-    public EncryptedAccount[] encrypt(Folder folder, ArrayList<Integer> userIds) throws LockerRuntimeException, CryptoException, LockerCommunicationException {
+    public EncryptedAccount[] encrypt(Folder folder, ArrayList<Integer> userIds) throws LockerRemoteException, CryptoException, LockerCommunicationException {
         PublicKey[] publicKeys = folder.getPublicKeysFromServer();
         return this.encrypt(userIds, publicKeys);
     }
     
-    public EncryptedAccount[] encrypt(ArrayList<Integer> userIds, PublicKey[] publicKeys) throws LockerRuntimeException, CryptoException {
+    public EncryptedAccount[] encrypt(ArrayList<Integer> userIds, PublicKey[] publicKeys) throws LockerRemoteException, CryptoException {
         byte[] metadataBytes = (new JSONObject()
                 .put("name", name)
                 .put("notes", notes)
@@ -164,11 +164,11 @@ public class Account {
         return encryptedAccounts.toArray(new EncryptedAccount[encryptedAccounts.size()]);
     }
     
-    public EncryptedAccount[] encrypt(PublicKey[] publicKeys) throws LockerRuntimeException, CryptoException {
+    public EncryptedAccount[] encrypt(PublicKey[] publicKeys) throws LockerRemoteException, CryptoException {
         return this.encrypt(null, publicKeys);
     }
     
-    public void updateOnServer(Folder folder) throws LockerRuntimeException, CryptoException, LockerCommunicationException {      
+    public void updateOnServer(Folder folder) throws LockerRemoteException, CryptoException, LockerCommunicationException, LockerRuntimeException {      
         Base64.Encoder encoder = Base64.getEncoder();
         JSONArray accounts = new JSONArray();        
         Locker locker = Locker.getInstance();
@@ -187,16 +187,16 @@ public class Account {
         JSONObject response = locker.makePostRequest("accounts/"+this.id, payload);
 
         if (!response.isNull("error")) {
-            throw new LockerRuntimeException(response.getString("message"));
+            throw new LockerRemoteException(response.getString("message"));
         }
     }
     
-    public static Account getFromServer(int accountId, byte[] privateKey) throws LockerRuntimeException, CryptoException, LockerCommunicationException {
+    public static Account getFromServer(int accountId, byte[] privateKey) throws LockerRemoteException, CryptoException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeGetRequest("accounts/"+accountId);            
 
         if (!response.isNull("error")) {
-            throw new LockerRuntimeException(response.getString("message"));
+            throw new LockerRemoteException(response.getString("message"));
         }
         
         JSONObject accountObject = response.getJSONObject("account");
