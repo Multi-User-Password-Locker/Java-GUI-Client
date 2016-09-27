@@ -16,6 +16,8 @@ import me.camerongray.teamlocker.core.LockerRemoteException;
  */
 public class ExceptionHandling {
     public static void showExceptionMessage(Frame frame, Throwable e, boolean exitOnClose) {
+        final int OK_OPTION = 0;
+        final int DETAILS_OPTION = 1;
         // Do not show details button for exceptions returned from the server,
         // stack trace/details.etc are pointless in this case
         Object[] options;
@@ -24,9 +26,6 @@ public class ExceptionHandling {
         } else {
             options = new Object[]{"OK", "Details"};
         }
-        
-        final int OK_OPTION = 0;
-        final int DETAILS_OPTION = 1;
         
         int result = -1;
         while (result != OK_OPTION) {
