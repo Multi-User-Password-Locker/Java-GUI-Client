@@ -39,6 +39,7 @@ public class MainWindow extends javax.swing.JFrame {
     private HashMap<String, Folder> folderObjects = new HashMap<String, Folder>();
     private Folder selectedFolder;
     private ButtonColumn bcView;
+    private StatusBar statusBar;
 
     private HashMap<Integer, Integer> rowAccountIds = new HashMap<>();
 
@@ -54,6 +55,7 @@ public class MainWindow extends javax.swing.JFrame {
             this.dispose();
         }
         initComponents();
+        this.statusBar = new StatusBar(lblStatus, pgbStatus);
         populateUi();
 
         // Table buttons - Column indices below must be kept up to date with the form
@@ -63,8 +65,7 @@ public class MainWindow extends javax.swing.JFrame {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 int accountId = rowAccountIds.get(Integer.valueOf(evt.getActionCommand()));
-                pgbStatus.setIndeterminate(true);
-                lblStatus.setText("Getting Account...");
+                statusBar.setStatus("Getting Account...", true);
                 (new GetAccountTask(MainWindow.this, accountId)).execute();
             }
         }, VIEW_COLUMN_INDEX);
@@ -85,8 +86,7 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     public void refreshFolderList() {
-        pgbStatus.setIndeterminate(true);
-        lblStatus.setText("Getting folders...");
+        statusBar.setStatus("Getting Folders...", true);
         (new GetFoldersTask(this, this.locker)).execute();
     }
 
@@ -360,15 +360,13 @@ public class MainWindow extends javax.swing.JFrame {
 
     public void refreshFolderAccounts() {
         if (this.selectedFolder != null) {
-            pgbStatus.setIndeterminate(true);
-            lblStatus.setText("Getting Accounts...");
+            statusBar.setStatus("Getting Accounts...", true);
             (new GetFolderAccountsTask(this, this.selectedFolder)).execute();
         }
     }
 
     private void menuRefreshFoldersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuRefreshFoldersActionPerformed
-        pgbStatus.setIndeterminate(true);
-        lblStatus.setText("Getting folders...");
+        statusBar.setStatus("Getting folders...", true);
         (new GetFoldersTask(this, this.locker)).execute();
     }//GEN-LAST:event_menuRefreshFoldersActionPerformed
 
@@ -388,8 +386,7 @@ public class MainWindow extends javax.swing.JFrame {
             ExceptionHandling.handleException(this, e);
             return;
         }
-        pgbStatus.setIndeterminate(true);
-        lblStatus.setText("Getting folders...");
+        statusBar.setStatus("Getting folders...", true);
         (new GetFoldersTask(this, this.locker)).execute();
     }//GEN-LAST:event_menuNewFolderActionPerformed
 
@@ -410,8 +407,7 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
 
-        pgbStatus.setIndeterminate(true);
-        lblStatus.setText("Deleting folder...");
+        statusBar.setStatus("Deleting folder...", true);
         lstFolders.clearSelection();
         try {
             folder.deleteFromServer();
@@ -419,7 +415,7 @@ public class MainWindow extends javax.swing.JFrame {
             ExceptionHandling.handleException(this, e);
         }
 
-        lblStatus.setText("Getting folders...");
+        statusBar.setStatus("Getting folders...", true);
         (new GetFoldersTask(this, this.locker)).execute();
     }//GEN-LAST:event_menuDeleteFolderActionPerformed
 
@@ -430,8 +426,7 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
 
-        pgbStatus.setIndeterminate(true);
-        lblStatus.setText("Fetching Permissions...");
+        statusBar.setStatus("Fetching Permissions...", true);
         (new GetFolderPermissionsTask(this, this.selectedFolder)).execute();
     }//GEN-LAST:event_menuEditFolderActionPerformed
 
@@ -444,8 +439,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_menuChangePasswordActionPerformed
 
     private void mnuManageUsersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuManageUsersActionPerformed
-        pgbStatus.setIndeterminate(true);
-        lblStatus.setText("Getting Users...");
+        statusBar.setStatus("Getting Users...", true);
         (new GetUsersTask(this)).execute();
     }//GEN-LAST:event_mnuManageUsersActionPerformed
 
@@ -496,8 +490,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         @Override
         public void done() {
-            pgbStatus.setIndeterminate(false);
-            lblStatus.setText("Ready");
+            statusBar.setReady();
             try {
                 Folder[] folders = this.get();
                 DefaultListModel model = new DefaultListModel();
@@ -530,8 +523,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         @Override
         public void done() {
-            pgbStatus.setIndeterminate(false);
-            lblStatus.setText("Ready");
+            statusBar.setReady();
             try {
                 FolderPermission[] permissions = this.get();
                 new EditFolder(this.window, true, this.folder, permissions).setVisible(true);
@@ -559,8 +551,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         @Override
         public void done() {
-            pgbStatus.setIndeterminate(false);
-            lblStatus.setText("Ready");
+            statusBar.setReady();
             try {
                 Account[] accounts = this.get();
 
@@ -598,8 +589,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         @Override
         public void done() {
-            pgbStatus.setIndeterminate(false);
-            lblStatus.setText("Ready");
+            statusBar.setReady();
             try {
                 Account account = this.get();
                 new AccountForm(window, false, window.user, account, window.selectedFolder).setVisible(true);
@@ -625,8 +615,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         @Override
         public void done() {
-            pgbStatus.setIndeterminate(false);
-            lblStatus.setText("Ready");
+            statusBar.setReady();
             try {
                 User[] users = get();
                 (new UserIndex(this.window, true, users)).setVisible(true);
