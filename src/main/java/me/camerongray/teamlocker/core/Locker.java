@@ -108,14 +108,18 @@ public class Locker {
         }
     }
 
-    public boolean checkAuth() throws LockerCommunicationException {
+    public boolean checkAuth() throws LockerCommunicationException, LockerRemoteException {
+        JSONObject response;
         try {
-            JSONObject response = Unirest.get(this.getUrl("check_auth")).basicAuth(this.username,
+            response = Unirest.get(this.getUrl("check_auth")).basicAuth(this.username,
                     this.auth_key).asJson().getBody().getObject();
-            return response.isNull("error");
         } catch (Exception e) {
             throw new LockerCommunicationException("Could not connect to server, check your network connection", e);
         }
+        if (!response.isNull("error")) {
+            throw new LockerRemoteException(response.getString("message"));
+        }
+        return true;
     }
     
     public ObjectMapper getObjectMapper() {

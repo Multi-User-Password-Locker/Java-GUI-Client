@@ -14,8 +14,8 @@ import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.CurrentUser;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
+import me.camerongray.teamlocker.core.LockerRemoteException;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
-import me.camerongray.teamlocker.core.LockerSecurityException;
 import me.camerongray.teamlocker.core.User;
 
 /**
@@ -347,30 +347,27 @@ public class Login extends javax.swing.JFrame {
         }
 
         @Override
-        public Void doInBackground() throws LockerSecurityException, LockerRuntimeException, LockerCommunicationException {
+        public Void doInBackground() throws LockerRemoteException, LockerCommunicationException, LockerRuntimeException {
             Locker locker = Locker.getInstance();
             locker.init(hostname, port, username, password);
 
-            if (locker.checkAuth()) {
-                if (this.dialog.chkRememberUser.isSelected()) {
-                    this.dialog.preferences.put("login_username", username);
-                    this.dialog.preferences.putBoolean("login_rememberUser", true);
-                } else {
-                    this.dialog.preferences.remove("login_username");
-                    this.dialog.preferences.putBoolean("login_rememberUser", false);
-                }
-                
-                if (this.dialog.chkRememberServer.isSelected()) {
-                    this.dialog.preferences.put("login_hostname", hostname);
-                    this.dialog.preferences.putInt("login_port", port);
-                    this.dialog.preferences.putBoolean("login_rememberServer", true);
-                } else {
-                    this.dialog.preferences.remove("login_hostname");
-                    this.dialog.preferences.remove("login_port");
-                    this.dialog.preferences.putBoolean("login_rememberServer", false);
-                }
+            locker.checkAuth();
+            if (this.dialog.chkRememberUser.isSelected()) {
+                this.dialog.preferences.put("login_username", username);
+                this.dialog.preferences.putBoolean("login_rememberUser", true);
             } else {
-                throw new LockerSecurityException("Incorrect Username/Password, Please try again!");
+                this.dialog.preferences.remove("login_username");
+                this.dialog.preferences.putBoolean("login_rememberUser", false);
+            }
+
+            if (this.dialog.chkRememberServer.isSelected()) {
+                this.dialog.preferences.put("login_hostname", hostname);
+                this.dialog.preferences.putInt("login_port", port);
+                this.dialog.preferences.putBoolean("login_rememberServer", true);
+            } else {
+                this.dialog.preferences.remove("login_hostname");
+                this.dialog.preferences.remove("login_port");
+                this.dialog.preferences.putBoolean("login_rememberServer", false);
             }
             return null;
         }
