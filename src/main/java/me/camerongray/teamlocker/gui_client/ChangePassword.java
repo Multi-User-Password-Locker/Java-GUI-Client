@@ -25,6 +25,7 @@ public class ChangePassword extends javax.swing.JDialog {
     private Locker locker;
     private User user;
     private MainWindow parent;
+    private StatusBar statusBar;
     
     /**
      * Creates new form ChangePassword
@@ -32,6 +33,8 @@ public class ChangePassword extends javax.swing.JDialog {
     public ChangePassword(MainWindow parent, boolean modal, User user) {
         super(parent, modal);
         initComponents();
+        this.statusBar = new StatusBar(lblStatus, pgbProgress);
+        this.statusBar.hide();
         this.locker = Locker.getInstance();
         this.user = user;
         this.parent = parent;
@@ -40,7 +43,6 @@ public class ChangePassword extends javax.swing.JDialog {
     }
     
     public void populateUi() {
-        this.panelStatus.setVisible(false);
         this.lblUsername.setText(this.user.getUsername());
     }
 
@@ -62,8 +64,8 @@ public class ChangePassword extends javax.swing.JDialog {
         btnCancel = new javax.swing.JButton();
         btnChangePassword = new javax.swing.JButton();
         panelStatus = new javax.swing.JPanel();
-        jProgressBar1 = new javax.swing.JProgressBar();
-        jLabel5 = new javax.swing.JLabel();
+        pgbProgress = new javax.swing.JProgressBar();
+        lblStatus = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Change Password - TeamPass");
@@ -91,9 +93,7 @@ public class ChangePassword extends javax.swing.JDialog {
             }
         });
 
-        jProgressBar1.setIndeterminate(true);
-
-        jLabel5.setText("Updating Password...");
+        lblStatus.setText("NONE");
 
         javax.swing.GroupLayout panelStatusLayout = new javax.swing.GroupLayout(panelStatus);
         panelStatus.setLayout(panelStatusLayout);
@@ -101,18 +101,18 @@ public class ChangePassword extends javax.swing.JDialog {
             panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelStatusLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel5)
+                .addComponent(lblStatus)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(pgbProgress, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(19, Short.MAX_VALUE))
         );
         panelStatusLayout.setVerticalGroup(
             panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelStatusLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel5)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblStatus)
+                    .addComponent(pgbProgress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -125,9 +125,9 @@ public class ChangePassword extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnCancel)
-                        .addGap(18, 18, 18)
+                        .addGap(0, 70, Short.MAX_VALUE)
                         .addComponent(panelStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(18, 18, Short.MAX_VALUE)
+                        .addGap(18, 70, Short.MAX_VALUE)
                         .addComponent(btnChangePassword))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
@@ -180,7 +180,7 @@ public class ChangePassword extends javax.swing.JDialog {
                         "Error Changing Password", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        this.panelStatus.setVisible(true);
+        statusBar.setStatus("Changing Password...", true);
         (new ChangePasswordTask(this, this.locker, this.user, new String(this.txtNewPassword.getPassword()))).execute();
     }//GEN-LAST:event_btnChangePasswordActionPerformed
 
@@ -190,10 +190,10 @@ public class ChangePassword extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JLabel lblStatus;
     private javax.swing.JLabel lblUsername;
     private javax.swing.JPanel panelStatus;
+    private javax.swing.JProgressBar pgbProgress;
     private javax.swing.JPasswordField txtConfirmNewPassword;
     private javax.swing.JPasswordField txtNewPassword;
     // End of variables declaration//GEN-END:variables
@@ -219,7 +219,7 @@ public class ChangePassword extends javax.swing.JDialog {
         
         @Override
         public void done() {
-            this.dialog.panelStatus.setVisible(false);
+            statusBar.hide();
             try {
                 get();
             } catch (Exception e) {

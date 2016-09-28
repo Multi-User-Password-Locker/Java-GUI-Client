@@ -33,12 +33,15 @@ public class AccountForm extends javax.swing.JDialog {
     private Account account;
     private User user;
     private boolean passwordChanged = false;
+    private StatusBar statusBar;
 
     
     // Show form for creating new account
     public AccountForm(MainWindow parent, boolean modal, Folder folder) {
         super(parent, modal);
         initComponents();
+        statusBar = new StatusBar(lblStatus, pgbProgress);
+        statusBar.hide();
         this.locker = Locker.getInstance();
         this.mode = mode;
         this.folder = folder;
@@ -50,8 +53,6 @@ public class AccountForm extends javax.swing.JDialog {
         btnGetPassword.setVisible(false);
         btnChangePassword.setVisible(false);
         btnDelete.setVisible(false);
-        lblStatus.setVisible(false);
-        pgbProgress.setVisible(false);
         this.getRootPane().setDefaultButton(btnSubmit);
     }
     
@@ -59,6 +60,8 @@ public class AccountForm extends javax.swing.JDialog {
     public AccountForm(MainWindow parent, boolean modal, User user, Account account, Folder folder) {
         super(parent, modal);
         initComponents();
+        statusBar = new StatusBar(lblStatus, pgbProgress);
+        statusBar.hide();
         this.locker = Locker.getInstance();        
         this.parent = parent;
         this.account = account;
@@ -79,8 +82,6 @@ public class AccountForm extends javax.swing.JDialog {
         panelPasswordField.setVisible(false);
         lblPassword.setVisible(false);
         btnCancel.setText("Close");
-        lblStatus.setVisible(false);
-        pgbProgress.setVisible(false);
         this.txtAccountName.setText(this.account.getName());
         this.txtUsername.setText(this.account.getUsername());
         this.txtNotes.setText(this.account.getNotes());
@@ -178,8 +179,6 @@ public class AccountForm extends javax.swing.JDialog {
 
         lblStatus.setText("NONE");
         lblStatus.setToolTipText("");
-
-        pgbProgress.setIndeterminate(true);
 
         javax.swing.GroupLayout panelStatusLayout = new javax.swing.GroupLayout(panelStatus);
         panelStatus.setLayout(panelStatusLayout);
@@ -301,9 +300,7 @@ public class AccountForm extends javax.swing.JDialog {
 
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         String operation = (this.mode == AccountForm.NEW_MODE) ? "Adding" : "Saving";
-        lblStatus.setText(operation + " Account...");
-        lblStatus.setVisible(true);
-        pgbProgress.setVisible(true);
+        statusBar.setStatus(operation + " Account...", true);
         (new SubmitAccountFormTask(this)).execute();
     }//GEN-LAST:event_btnSubmitActionPerformed
 
@@ -319,9 +316,7 @@ public class AccountForm extends javax.swing.JDialog {
     }//GEN-LAST:event_chkShowPasswordActionPerformed
 
     private void btnGetPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGetPasswordActionPerformed
-        lblStatus.setText("Getting Password...");
-        lblStatus.setVisible(true);
-        pgbProgress.setVisible(true);
+        statusBar.setStatus("Getting Password...", true);
         (new GetPasswordTask(this)).execute();
     }//GEN-LAST:event_btnGetPasswordActionPerformed
 
@@ -340,9 +335,7 @@ public class AccountForm extends javax.swing.JDialog {
         if (confirm == JOptionPane.NO_OPTION) {
             return;
         }
-        lblStatus.setText("Deleting Account...");
-        lblStatus.setVisible(true);
-        pgbProgress.setVisible(true);
+        statusBar.setStatus("Deleting Account...", true);
         (new DeleteAccountTask(this)).execute();
     }//GEN-LAST:event_btnDeleteActionPerformed
 
@@ -384,8 +377,7 @@ public class AccountForm extends javax.swing.JDialog {
         
         @Override
         public void done() {
-            lblStatus.setVisible(false);
-            pgbProgress.setVisible(false);
+            statusBar.hide();
             String password;
             try {
                 password = get();
@@ -439,8 +431,7 @@ public class AccountForm extends javax.swing.JDialog {
         
         @Override
         public void done() {
-            lblStatus.setVisible(false);
-            pgbProgress.setVisible(false);
+            statusBar.hide();
             try {
                 this.get();
             } catch (Exception e) {
@@ -470,8 +461,7 @@ public class AccountForm extends javax.swing.JDialog {
         
         @Override
         public void done() {
-            lblStatus.setVisible(false);
-            pgbProgress.setVisible(false);
+            statusBar.hide();
             try {
                 get();
             } catch (Exception e) {

@@ -27,6 +27,7 @@ public class UserForm extends javax.swing.JDialog {
     public static final int NEW_MODE = 1;
     private int mode;
     private Locker locker;
+    private StatusBar statusBar;
 
     /**
      * Creates new form UserForm
@@ -36,6 +37,8 @@ public class UserForm extends javax.swing.JDialog {
         this.mode = mode;
         this.locker = Locker.getInstance();
         initComponents();
+        this.statusBar = new StatusBar(lblStatus, pgbProgress);
+        this.statusBar.hide();
         
         if (mode == UserForm.EDIT_MODE) {
             this.setTitle("Edit User - TeamLocker");
@@ -49,7 +52,6 @@ public class UserForm extends javax.swing.JDialog {
             btnSubmit.setText("Add User");
             btnChangePassword.setVisible(false);
         }
-        panelStatus.setVisible(false);
         this.getRootPane().setDefaultButton(btnSubmit);
     }
 
@@ -80,7 +82,7 @@ public class UserForm extends javax.swing.JDialog {
         btnSubmit = new javax.swing.JButton();
         panelStatus = new javax.swing.JPanel();
         lblStatus = new javax.swing.JLabel();
-        jProgressBar1 = new javax.swing.JProgressBar();
+        pgbProgress = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setLocationByPlatform(true);
@@ -120,9 +122,7 @@ public class UserForm extends javax.swing.JDialog {
             }
         });
 
-        lblStatus.setText("STATUS");
-
-        jProgressBar1.setIndeterminate(true);
+        lblStatus.setText("NONE");
 
         javax.swing.GroupLayout panelStatusLayout = new javax.swing.GroupLayout(panelStatus);
         panelStatus.setLayout(panelStatusLayout);
@@ -132,7 +132,7 @@ public class UserForm extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(lblStatus)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
+                .addComponent(pgbProgress, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
         );
         panelStatusLayout.setVerticalGroup(
             panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -140,7 +140,7 @@ public class UserForm extends javax.swing.JDialog {
                 .addContainerGap(10, Short.MAX_VALUE)
                 .addGroup(panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lblStatus)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(pgbProgress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(9, 9, 9))
         );
 
@@ -174,9 +174,9 @@ public class UserForm extends javax.swing.JDialog {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(btnCancel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
                         .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
                         .addComponent(btnSubmit)))
                 .addContainerGap())
         );
@@ -253,8 +253,7 @@ public class UserForm extends javax.swing.JDialog {
             }
         }
         
-        lblStatus.setText("Adding User...");
-        panelStatus.setVisible(true);
+        statusBar.setStatus("Adding User...", true);
         
         (new AddUserTask(this, this.locker, txtUsername.getText(), new String(txtPassword.getPassword()), txtFullName.getText(), txtEmail.getText(), isAdmin)).execute();
     }//GEN-LAST:event_btnSubmitActionPerformed
@@ -268,12 +267,12 @@ public class UserForm extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JLabel lblPassword;
     private javax.swing.JLabel lblPasswordConfirm;
     private javax.swing.JLabel lblStatus;
     private javax.swing.JComboBox<String> lstUserType;
     private javax.swing.JPanel panelStatus;
+    private javax.swing.JProgressBar pgbProgress;
     private javax.swing.JTextField txtEmail;
     private javax.swing.JTextField txtFullName;
     private javax.swing.JPasswordField txtPassword;
@@ -308,10 +307,11 @@ public class UserForm extends javax.swing.JDialog {
         
         @Override
         protected void done() {
-            panelStatus.setVisible(false);
+            statusBar.hide();
             try {
                 get();
             } catch (Exception e) {
+                // TODO: Move to proper exception handling
                 JOptionPane.showMessageDialog(this.dialog, e.getCause().getMessage(),
                     "Error Adding User", JOptionPane.ERROR_MESSAGE);
                 return;

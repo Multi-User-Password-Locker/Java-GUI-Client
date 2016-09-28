@@ -29,6 +29,7 @@ public class EditFolder extends javax.swing.JDialog {
     private User user;
     private HashMap<Integer, User> userMap = new HashMap<>();
     private ArrayList<Integer> noPermissionUserIds = new ArrayList<>();
+    private StatusBar statusBar;
     
     /**
      * Creates new form EditFolder
@@ -40,7 +41,8 @@ public class EditFolder extends javax.swing.JDialog {
         this.locker = Locker.getInstance();
         this.folder = folder;
         initComponents();
-        this.panelSavingFolder.setVisible(false);
+        this.statusBar = new StatusBar(lblStatus, pgbProgress);
+        this.statusBar.hide();
         this.getRootPane().setDefaultButton(btnSaveFolder);
         populateUi(permissions);
     }
@@ -84,9 +86,9 @@ public class EditFolder extends javax.swing.JDialog {
         btnSaveFolder = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        panelSavingFolder = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        jProgressBar1 = new javax.swing.JProgressBar();
+        panelStatus = new javax.swing.JPanel();
+        lblStatus = new javax.swing.JLabel();
+        pgbProgress = new javax.swing.JProgressBar();
         jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -138,26 +140,24 @@ public class EditFolder extends javax.swing.JDialog {
 
         jLabel2.setText("Permissions:");
 
-        jLabel5.setText("Saving Folder...");
+        lblStatus.setText("NONE");
 
-        jProgressBar1.setIndeterminate(true);
-
-        javax.swing.GroupLayout panelSavingFolderLayout = new javax.swing.GroupLayout(panelSavingFolder);
-        panelSavingFolder.setLayout(panelSavingFolderLayout);
-        panelSavingFolderLayout.setHorizontalGroup(
-            panelSavingFolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelSavingFolderLayout.createSequentialGroup()
-                .addComponent(jLabel5)
+        javax.swing.GroupLayout panelStatusLayout = new javax.swing.GroupLayout(panelStatus);
+        panelStatus.setLayout(panelStatusLayout);
+        panelStatusLayout.setHorizontalGroup(
+            panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelStatusLayout.createSequentialGroup()
+                .addComponent(lblStatus)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(pgbProgress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        panelSavingFolderLayout.setVerticalGroup(
-            panelSavingFolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelSavingFolderLayout.createSequentialGroup()
-                .addComponent(jLabel5)
+        panelStatusLayout.setVerticalGroup(
+            panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelStatusLayout.createSequentialGroup()
+                .addComponent(lblStatus)
                 .addGap(0, 0, Short.MAX_VALUE))
-            .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(pgbProgress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         jLabel3.setText("Administrators always have full read/write access to folders and therefore not listed.");
@@ -181,7 +181,7 @@ public class EditFolder extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnCancel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(panelSavingFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnSaveFolder)))
                 .addContainerGap())
@@ -205,7 +205,7 @@ public class EditFolder extends javax.swing.JDialog {
                         .addComponent(btnCancel)
                         .addGroup(layout.createSequentialGroup()
                             .addGap(0, 0, Short.MAX_VALUE)
-                            .addComponent(panelSavingFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(0, 0, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnSaveFolder)
@@ -224,7 +224,7 @@ public class EditFolder extends javax.swing.JDialog {
         final int COLUMN_READ = 3;
         final int COLUMN_WRITE = 4;
         
-        panelSavingFolder.setVisible(true);
+        statusBar.setStatus("Saving Folder...", true);
         btnSaveFolder.setEnabled(false);
         DefaultTableModel model = (DefaultTableModel)tblPermissions.getModel();
         ArrayList<FolderPermission> permissionArrayList = new ArrayList<>();
@@ -261,10 +261,10 @@ public class EditFolder extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JPanel panelSavingFolder;
+    private javax.swing.JLabel lblStatus;
+    private javax.swing.JPanel panelStatus;
+    private javax.swing.JProgressBar pgbProgress;
     private javax.swing.JTable tblPermissions;
     private javax.swing.JTextField txtFolderName;
     // End of variables declaration//GEN-END:variables
@@ -289,13 +289,14 @@ public class EditFolder extends javax.swing.JDialog {
 
         @Override
         public void done() {
-            panelSavingFolder.setVisible(false);
+            statusBar.hide();
             btnSaveFolder.setEnabled(true);
             try {
                 this.get();
                 this.dialog.parent.refreshFolderList();
                 this.dialog.dispose();
             } catch (Exception e) {
+                // TODO: Change to proper exception handling
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this.dialog, e.getCause().getMessage(),
                         "Error Saving Folder", JOptionPane.ERROR_MESSAGE);

@@ -144,7 +144,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="lblStatus" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="pgbStatus" pref="208" max="32767" attributes="0"/>
+                  <Component id="pgbProgress" pref="208" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -155,7 +155,7 @@
                   <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                       <Component id="lblStatus" max="32767" attributes="0"/>
-                      <Component id="pgbStatus" max="32767" attributes="0"/>
+                      <Component id="pgbProgress" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -165,13 +165,10 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="lblStatus">
           <Properties>
-            <Property name="text" type="java.lang.String" value="STATUS"/>
+            <Property name="text" type="java.lang.String" value="NONE"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JProgressBar" name="pgbStatus">
-          <Properties>
-            <Property name="indeterminate" type="boolean" value="true"/>
-          </Properties>
+        <Component class="javax.swing.JProgressBar" name="pgbProgress">
         </Component>
       </SubComponents>
     </Container>

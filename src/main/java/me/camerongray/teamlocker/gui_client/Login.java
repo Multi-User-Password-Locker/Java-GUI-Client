@@ -24,12 +24,15 @@ import me.camerongray.teamlocker.core.User;
  */
 public class Login extends javax.swing.JFrame {
     private Preferences preferences;
+    private StatusBar statusBar;
 
     /**
      * Creates new form LoginFrame
      */
     public Login() {
         initComponents();
+        this.statusBar = new StatusBar(lblStatus, pgbProgress);
+        this.statusBar.hide();
         this.getRootPane().setDefaultButton(btnLogin);
         this.preferences = Preferences.userNodeForPackage(this.getClass());
         
@@ -47,7 +50,6 @@ public class Login extends javax.swing.JFrame {
             txtPassword.requestFocus();
         }
         
-        panelLoggingIn.setVisible(false);
         try {
             lblLogo.setIcon(new ImageIcon(ImageIO.read(this.getClass().getResource("logo_150px.png"))));
             lblLogo.setText("");
@@ -69,9 +71,9 @@ public class Login extends javax.swing.JFrame {
         lblLogo = new javax.swing.JLabel();
         btnLogin = new javax.swing.JButton();
         btnExit = new javax.swing.JButton();
-        panelLoggingIn = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        jProgressBar1 = new javax.swing.JProgressBar();
+        panelStatus = new javax.swing.JPanel();
+        lblStatus = new javax.swing.JLabel();
+        pgbProgress = new javax.swing.JProgressBar();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         txtHostname = new javax.swing.JTextField();
@@ -103,23 +105,21 @@ public class Login extends javax.swing.JFrame {
             }
         });
 
-        jLabel5.setText("Logging In...");
+        lblStatus.setText("NONE");
 
-        jProgressBar1.setIndeterminate(true);
-
-        javax.swing.GroupLayout panelLoggingInLayout = new javax.swing.GroupLayout(panelLoggingIn);
-        panelLoggingIn.setLayout(panelLoggingInLayout);
-        panelLoggingInLayout.setHorizontalGroup(
-            panelLoggingInLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelLoggingInLayout.createSequentialGroup()
-                .addComponent(jLabel5)
+        javax.swing.GroupLayout panelStatusLayout = new javax.swing.GroupLayout(panelStatus);
+        panelStatus.setLayout(panelStatusLayout);
+        panelStatusLayout.setHorizontalGroup(
+            panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelStatusLayout.createSequentialGroup()
+                .addComponent(lblStatus)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
+                .addComponent(pgbProgress, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
         );
-        panelLoggingInLayout.setVerticalGroup(
-            panelLoggingInLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(jLabel5)
+        panelStatusLayout.setVerticalGroup(
+            panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pgbProgress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(lblStatus)
         );
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -206,9 +206,9 @@ public class Login extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(btnExit)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 174, Short.MAX_VALUE)
-                        .addComponent(panelLoggingIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 175, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 199, Short.MAX_VALUE)
+                        .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 200, Short.MAX_VALUE)
                         .addComponent(btnLogin))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -235,7 +235,7 @@ public class Login extends javax.swing.JFrame {
                             .addComponent(btnExit))
                         .addGap(9, 9, 9))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(panelLoggingIn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(17, 17, 17))))
         );
 
@@ -263,7 +263,7 @@ public class Login extends javax.swing.JFrame {
             return;
         }
 
-        panelLoggingIn.setVisible(true);
+        statusBar.setStatus("Logging in...", true);
         btnLogin.setEnabled(false);
         new LoginTask(this, hostname, port, username, password).execute();
     }//GEN-LAST:event_btnLoginActionPerformed
@@ -321,11 +321,11 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JLabel lblLogo;
-    private javax.swing.JPanel panelLoggingIn;
+    private javax.swing.JLabel lblStatus;
+    private javax.swing.JPanel panelStatus;
+    private javax.swing.JProgressBar pgbProgress;
     private javax.swing.JTextField txtHostname;
     private javax.swing.JPasswordField txtPassword;
     private javax.swing.JTextField txtPort;
@@ -377,7 +377,7 @@ public class Login extends javax.swing.JFrame {
 
         @Override
         public void done() {
-            panelLoggingIn.setVisible(false);
+            statusBar.hide();
             btnLogin.setEnabled(true);
             try {
                 this.get();

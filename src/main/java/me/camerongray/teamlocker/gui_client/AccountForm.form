@@ -269,9 +269,6 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JProgressBar" name="pgbProgress">
-          <Properties>
-            <Property name="indeterminate" type="boolean" value="true"/>
-          </Properties>
         </Component>
       </SubComponents>
     </Container>

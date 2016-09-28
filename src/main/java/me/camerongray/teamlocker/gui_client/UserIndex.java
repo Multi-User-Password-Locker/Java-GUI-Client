@@ -16,6 +16,7 @@ import me.camerongray.teamlocker.core.User;
  */
 public class UserIndex extends javax.swing.JDialog {  
     private ButtonColumn bcEdit;
+    private StatusBar statusBar;
     java.awt.Frame parent;
     /**
      * Creates new form UserIndex
@@ -23,7 +24,8 @@ public class UserIndex extends javax.swing.JDialog {
     public UserIndex(java.awt.Frame parent, boolean modal, User[] users) {
         super(parent, modal);
         initComponents();
-        panelStatus.setVisible(false);
+        this.statusBar = new StatusBar(lblStatus, pgbProgress);
+        this.statusBar.hide();
         
         this.parent = parent;
         
@@ -60,7 +62,7 @@ public class UserIndex extends javax.swing.JDialog {
         btnNewUser = new javax.swing.JButton();
         panelStatus = new javax.swing.JPanel();
         lblStatus = new javax.swing.JLabel();
-        pgbStatus = new javax.swing.JProgressBar();
+        pgbProgress = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Manage Users");
@@ -111,9 +113,7 @@ public class UserIndex extends javax.swing.JDialog {
             }
         });
 
-        lblStatus.setText("STATUS");
-
-        pgbStatus.setIndeterminate(true);
+        lblStatus.setText("NONE");
 
         javax.swing.GroupLayout panelStatusLayout = new javax.swing.GroupLayout(panelStatus);
         panelStatus.setLayout(panelStatusLayout);
@@ -123,7 +123,7 @@ public class UserIndex extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(lblStatus)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pgbStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                .addComponent(pgbProgress, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelStatusLayout.setVerticalGroup(
@@ -132,7 +132,7 @@ public class UserIndex extends javax.swing.JDialog {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pgbStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(pgbProgress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -184,7 +184,7 @@ public class UserIndex extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblStatus;
     private javax.swing.JPanel panelStatus;
-    private javax.swing.JProgressBar pgbStatus;
+    private javax.swing.JProgressBar pgbProgress;
     private javax.swing.JTable tblUsers;
     // End of variables declaration//GEN-END:variables
 }
