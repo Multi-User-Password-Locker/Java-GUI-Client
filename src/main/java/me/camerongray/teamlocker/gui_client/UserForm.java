@@ -28,6 +28,7 @@ public class UserForm extends javax.swing.JDialog {
     private int mode;
     private Locker locker;
     private StatusBar statusBar;
+    private java.awt.Frame parent;
 
     /**
      * Creates new form UserForm
@@ -39,6 +40,7 @@ public class UserForm extends javax.swing.JDialog {
         initComponents();
         this.statusBar = new StatusBar(lblStatus, pgbProgress);
         this.statusBar.hide();
+        this.parent = parent;
         
         if (mode == UserForm.EDIT_MODE) {
             this.setTitle("Edit User - TeamLocker");
@@ -311,9 +313,7 @@ public class UserForm extends javax.swing.JDialog {
             try {
                 get();
             } catch (Exception e) {
-                // TODO: Move to proper exception handling
-                JOptionPane.showMessageDialog(this.dialog, e.getCause().getMessage(),
-                    "Error Adding User", JOptionPane.ERROR_MESSAGE);
+                ExceptionHandling.handleSwingWorkerException(this.dialog.parent, e);
                 return;
             }
             JOptionPane.showMessageDialog(this.dialog, "User has been added successfully!",

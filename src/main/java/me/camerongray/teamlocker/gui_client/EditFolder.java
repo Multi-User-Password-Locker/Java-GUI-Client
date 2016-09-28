@@ -296,10 +296,7 @@ public class EditFolder extends javax.swing.JDialog {
                 this.dialog.parent.refreshFolderList();
                 this.dialog.dispose();
             } catch (Exception e) {
-                // TODO: Change to proper exception handling
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this.dialog, e.getCause().getMessage(),
-                        "Error Saving Folder", JOptionPane.ERROR_MESSAGE);
+                ExceptionHandling.handleSwingWorkerException(this.dialog.parent, e);
             }
         }
     }

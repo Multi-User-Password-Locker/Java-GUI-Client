@@ -382,8 +382,7 @@ public class AccountForm extends javax.swing.JDialog {
             try {
                 password = get();
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this.parent, e.getCause().getMessage(),
-                    "Error Getting Password", JOptionPane.ERROR_MESSAGE);
+                ExceptionHandling.handleSwingWorkerException(this.parent.parent, e);
                 return;
             }
             txtPassword.setText(password);
@@ -435,10 +434,7 @@ public class AccountForm extends javax.swing.JDialog {
             try {
                 this.get();
             } catch (Exception e) {
-                String operation = (this.parent.mode == AccountForm.NEW_MODE) ? "Adding" : "Saving";
-                
-                JOptionPane.showMessageDialog(this.parent, e.getCause().getMessage(),
-                    "Error " + operation + " Account", JOptionPane.ERROR_MESSAGE);
+                ExceptionHandling.handleSwingWorkerException(this.parent.parent, e);
                 return;
             }
             this.parent.parent.refreshFolderAccounts();
@@ -465,8 +461,7 @@ public class AccountForm extends javax.swing.JDialog {
             try {
                 get();
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this.parent, e.getCause().getMessage(),
-                    "Error Deleting Account", JOptionPane.ERROR_MESSAGE);
+                ExceptionHandling.handleSwingWorkerException(this.parent.parent, e);
                 return;
             }
             this.parent.dispose();
