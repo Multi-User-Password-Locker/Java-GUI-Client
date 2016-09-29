@@ -14,13 +14,8 @@ import javax.swing.UIManager.LookAndFeelInfo;
  */
 public class Main {
     public static void main(String[] args) {
-        try {           
-            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             System.out.println("Could not find look and feel, falling back to default");
         }
