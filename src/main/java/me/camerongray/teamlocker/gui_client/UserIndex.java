@@ -6,8 +6,13 @@
 package me.camerongray.teamlocker.gui_client;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
+import me.camerongray.teamlocker.core.Folder;
+import me.camerongray.teamlocker.core.Locker;
+import me.camerongray.teamlocker.core.LockerCommunicationException;
 import me.camerongray.teamlocker.core.User;
 
 /**
@@ -26,7 +31,6 @@ public class UserIndex extends javax.swing.JDialog {
         initComponents();
         this.statusBar = new StatusBar(lblStatus, pgbProgress);
         this.statusBar.hide();
-        
         this.parent = parent;
         
         // Table buttons - Column indices below must be kept up to date with the form
@@ -175,7 +179,8 @@ public class UserIndex extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCloseActionPerformed
 
     private void btnNewUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewUserActionPerformed
-        (new UserForm(this.parent, true, UserForm.NEW_MODE)).setVisible(true);
+        statusBar.setStatus("Getting folders...", true);
+        (new NewUserTask()).execute();
     }//GEN-LAST:event_btnNewUserActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -187,4 +192,21 @@ public class UserIndex extends javax.swing.JDialog {
     private javax.swing.JProgressBar pgbProgress;
     private javax.swing.JTable tblUsers;
     // End of variables declaration//GEN-END:variables
+
+    class NewUserTask extends SwingWorker<Folder[], Object> {
+        public Folder[] doInBackground() throws LockerCommunicationException, IOException {
+            Folder[] folders = Folder.getAllFromServer();
+            return folders;
+        }
+        
+        public void done() {
+            statusBar.hide();
+            try {
+                Folder[] folders = get();
+                (new UserForm(parent, true, UserForm.NEW_MODE, folders)).setVisible(true);
+            } catch (Exception e) {
+                ExceptionHandling.handleSwingWorkerException(parent, e);
+            }
+        }
+    }
 }

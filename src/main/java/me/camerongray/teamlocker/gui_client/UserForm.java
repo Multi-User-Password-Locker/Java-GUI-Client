@@ -10,7 +10,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
 import me.camerongray.teamlocker.core.CryptoException;
+import me.camerongray.teamlocker.core.Folder;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
 import me.camerongray.teamlocker.core.LockerRemoteException;
@@ -29,11 +31,12 @@ public class UserForm extends javax.swing.JDialog {
     private Locker locker;
     private StatusBar statusBar;
     private java.awt.Frame parent;
+    private Folder[] folders;
 
     /**
      * Creates new form UserForm
      */
-    public UserForm(java.awt.Frame parent, boolean modal, int mode) {
+    public UserForm(java.awt.Frame parent, boolean modal, int mode, Folder[] folders) {
         super(parent, modal);
         this.mode = mode;
         this.locker = Locker.getInstance();
@@ -41,7 +44,9 @@ public class UserForm extends javax.swing.JDialog {
         this.statusBar = new StatusBar(lblStatus, pgbProgress);
         this.statusBar.hide();
         this.parent = parent;
+        this.folders = folders;
         
+        lblAdminPermissions.setVisible(false);
         if (mode == UserForm.EDIT_MODE) {
             this.setTitle("Edit User - TeamLocker");
             btnSubmit.setText("Save User");
@@ -53,6 +58,10 @@ public class UserForm extends javax.swing.JDialog {
             this.setTitle("New User - TeamLocker");
             btnSubmit.setText("Add User");
             btnChangePassword.setVisible(false);
+            DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
+            for (Folder folder : this.folders) {
+                model.addRow(new Object[]{folder.getName(), false, false});
+            }
         }
         this.getRootPane().setDefaultButton(btnSubmit);
     }
@@ -82,9 +91,13 @@ public class UserForm extends javax.swing.JDialog {
         lstUserType = new javax.swing.JComboBox<>();
         btnCancel = new javax.swing.JButton();
         btnSubmit = new javax.swing.JButton();
+        spPermissions = new javax.swing.JScrollPane();
+        tblPermissions = new javax.swing.JTable();
         panelStatus = new javax.swing.JPanel();
         lblStatus = new javax.swing.JLabel();
         pgbProgress = new javax.swing.JProgressBar();
+        lblPermissions = new javax.swing.JLabel();
+        lblAdminPermissions = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setLocationByPlatform(true);
@@ -109,6 +122,11 @@ public class UserForm extends javax.swing.JDialog {
         jLabel6.setText("Type");
 
         lstUserType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Standard User", "Administrator" }));
+        lstUserType.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lstUserTypeActionPerformed(evt);
+            }
+        });
 
         btnCancel.setText("Cancel");
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
@@ -123,6 +141,32 @@ public class UserForm extends javax.swing.JDialog {
                 btnSubmitActionPerformed(evt);
             }
         });
+
+        tblPermissions.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Folder", "Read", "Write"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.Boolean.class, java.lang.Boolean.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, true, true
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblPermissions.getTableHeader().setReorderingAllowed(false);
+        spPermissions.setViewportView(tblPermissions);
 
         lblStatus.setText("NONE");
 
@@ -139,12 +183,16 @@ public class UserForm extends javax.swing.JDialog {
         panelStatusLayout.setVerticalGroup(
             panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelStatusLayout.createSequentialGroup()
-                .addContainerGap(10, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(panelStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lblStatus)
                     .addComponent(pgbProgress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(9, 9, 9))
         );
+
+        lblPermissions.setText("Permissions");
+
+        lblAdminPermissions.setText("Administrators have full read/write access to all folders");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -153,6 +201,13 @@ public class UserForm extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(btnCancel)
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnSubmit))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(8, 8, 8)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(lblPasswordConfirm)
@@ -160,9 +215,13 @@ public class UserForm extends javax.swing.JDialog {
                             .addComponent(jLabel1)
                             .addComponent(jLabel2)
                             .addComponent(lblPassword)
-                            .addComponent(jLabel6))
+                            .addComponent(jLabel6)
+                            .addComponent(lblPermissions))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(lblAdminPermissions)
+                                .addGap(0, 0, Short.MAX_VALUE))
                             .addComponent(txtPassword)
                             .addComponent(txtFullName)
                             .addComponent(txtUsername)
@@ -172,14 +231,8 @@ public class UserForm extends javax.swing.JDialog {
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(lstUserType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(btnChangePassword))
-                                .addGap(0, 0, Short.MAX_VALUE))))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(btnCancel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
-                        .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
-                        .addComponent(btnSubmit)))
+                                .addGap(295, 321, Short.MAX_VALUE))
+                            .addComponent(spPermissions))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -206,20 +259,22 @@ public class UserForm extends javax.swing.JDialog {
                     .addComponent(lblPasswordConfirm)
                     .addComponent(txtPasswordConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnChangePassword)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lstUserType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(btnChangePassword)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lstUserType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
-                        .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnSubmit, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(btnCancel, javax.swing.GroupLayout.Alignment.TRAILING))))
+                    .addComponent(lblPermissions)
+                    .addComponent(spPermissions, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblAdminPermissions)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(btnSubmit)
+                    .addComponent(btnCancel)
+                    .addComponent(panelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -260,6 +315,18 @@ public class UserForm extends javax.swing.JDialog {
         (new AddUserTask(this, this.locker, txtUsername.getText(), new String(txtPassword.getPassword()), txtFullName.getText(), txtEmail.getText(), isAdmin)).execute();
     }//GEN-LAST:event_btnSubmitActionPerformed
 
+    private void lstUserTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lstUserTypeActionPerformed
+        if (lstUserType.getSelectedItem() == "Administrator") {
+            spPermissions.setVisible(false);
+            lblPermissions.setVisible(false);
+            lblAdminPermissions.setVisible(true);
+        } else {
+            spPermissions.setVisible(true);
+            lblPermissions.setVisible(true);
+            lblAdminPermissions.setVisible(false);
+        }
+    }//GEN-LAST:event_lstUserTypeActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnChangePassword;
@@ -269,12 +336,16 @@ public class UserForm extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lblAdminPermissions;
     private javax.swing.JLabel lblPassword;
     private javax.swing.JLabel lblPasswordConfirm;
+    private javax.swing.JLabel lblPermissions;
     private javax.swing.JLabel lblStatus;
     private javax.swing.JComboBox<String> lstUserType;
     private javax.swing.JPanel panelStatus;
     private javax.swing.JProgressBar pgbProgress;
+    private javax.swing.JScrollPane spPermissions;
+    private javax.swing.JTable tblPermissions;
     private javax.swing.JTextField txtEmail;
     private javax.swing.JTextField txtFullName;
     private javax.swing.JPasswordField txtPassword;
