@@ -6,6 +6,7 @@
 package me.camerongray.teamlocker.gui_client;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -13,6 +14,7 @@ import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import me.camerongray.teamlocker.core.CryptoException;
 import me.camerongray.teamlocker.core.Folder;
+import me.camerongray.teamlocker.core.FolderPermission;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
 import me.camerongray.teamlocker.core.LockerSimpleException;
@@ -60,7 +62,7 @@ public class UserForm extends javax.swing.JDialog {
             btnChangePassword.setVisible(false);
             DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
             for (Folder folder : this.folders) {
-                model.addRow(new Object[]{folder.getName(), false, false});
+                model.addRow(new Object[]{folder, false, false});
             }
         }
         this.getRootPane().setDefaultButton(btnSubmit);
@@ -353,7 +355,7 @@ public class UserForm extends javax.swing.JDialog {
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
 
-    class AddUserTask extends SwingWorker<Void, Object> {
+    class AddUserTask extends SwingWorker<Void, String> {
         private UserForm dialog;
         private Locker locker;
         private String username;
@@ -374,8 +376,46 @@ public class UserForm extends javax.swing.JDialog {
 
         @Override
         protected Void doInBackground() throws LockerSimpleException, CryptoException, LockerCommunicationException, IOException, LockerRuntimeException {
-            new User(this.fullName, this.username, this.email, this.password, this.isAdmin).addToServer();
+            // TEMPOARY BODGE!
+            // TODO: This should be removed once server-side transactions are implemented
+            DefaultTableModel model2 = (DefaultTableModel) tblPermissions.getModel();
+            for (int i = 0; i < model2.getRowCount(); i++) {
+                boolean read = (Boolean)model2.getValueAt(i, 1);
+                boolean write = (Boolean)model2.getValueAt(i, 2);
+                if (write && !read) {
+                    throw new LockerSimpleException("Must have read permission to have write permission on a folder.");
+                }
+            }
+            
+            User user = new User(this.fullName, this.username, this.email, this.password, this.isAdmin);
+            user.addToServer();
+            
+            if (!user.isAdmin()) {
+                final int FOLDER_COL = 0;
+                final int READ_COL = 1;
+                final int WRITE_COL = 2;
+                publish("Setting permissions...");
+                DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Folder folder = (Folder)model.getValueAt(i, FOLDER_COL);
+                    boolean read = (Boolean)model.getValueAt(i, READ_COL);
+                    boolean write = (Boolean)model.getValueAt(i, WRITE_COL);
+                    // TODO: This should be removed once server-side transactions are implemented
+                    if (write && !read) {
+                        throw new LockerSimpleException("Must have read permission to have write permission on a folder.");
+                    }
+                    FolderPermission fp = new FolderPermission(user, folder, read, write);
+                    folder.updatePermissionsOnServer(fp);
+                }
+            }
+            
             return null;
+        }
+        
+        @Override
+        protected void process(List<String> chunks) {
+            String status = chunks.get(chunks.size() - 1); // Last status in list
+            statusBar.setStatus(status, true);
         }
         
         @Override

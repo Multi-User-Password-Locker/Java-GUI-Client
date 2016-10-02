@@ -203,7 +203,6 @@ public class User {
         }
     }
     
-    // TODO: Add support for setting folder permissions when adding user - Admins should be granted access to all folders
     public User addToServer() throws LockerSimpleException, CryptoException, IOException, LockerCommunicationException, LockerRuntimeException {
         Validation.ensureNonEmpty(this.username, "Username");
         Validation.ensureNonEmpty(this.password, "Password");
