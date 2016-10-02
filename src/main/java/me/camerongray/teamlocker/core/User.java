@@ -160,12 +160,12 @@ public class User {
         return user;
     }
     
-    public static User[] getAllFromServer() throws LockerRemoteException, IOException, LockerCommunicationException {
+    public static User[] getAllFromServer() throws LockerSimpleException, IOException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeGetRequest("users");
 
         if (!response.isNull("error")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
 
         User[] users = locker.getObjectMapper().readValue(response.getJSONArray("users").toString(), User[].class);
@@ -173,7 +173,7 @@ public class User {
         return users;
     }
     
-    public void changePasswordOnServer(String newPassword) throws LockerRemoteException, CryptoException, LockerCommunicationException, LockerRuntimeException {
+    public void changePasswordOnServer(String newPassword) throws LockerSimpleException, CryptoException, LockerCommunicationException, LockerRuntimeException {
         if (newPassword.isEmpty()) {
             throw new LockerRuntimeException("You must enter a password!");
         }
@@ -199,12 +199,12 @@ public class User {
         JSONObject response = locker.makePostRequest("users/self/update_password", payload);
 
         if (!response.isNull("error")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
     }
     
     // TODO: Add support for setting folder permissions when adding user - Admins should be granted access to all folders
-    public User addToServer() throws LockerRemoteException, CryptoException, IOException, LockerCommunicationException, LockerRuntimeException {
+    public User addToServer() throws LockerSimpleException, CryptoException, IOException, LockerCommunicationException, LockerRuntimeException {
         Validation.ensureNonEmpty(this.username, "Username");
         Validation.ensureNonEmpty(this.password, "Password");
         Validation.ensureNonEmpty(this.fullName, "Full Name");
@@ -237,7 +237,7 @@ public class User {
         JSONObject response = locker.makePutRequest("users", payload);
 
         if (!response.isNull("error")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
 
         this.id = response.getInt("user_id");

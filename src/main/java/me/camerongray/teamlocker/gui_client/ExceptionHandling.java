@@ -8,7 +8,7 @@ package me.camerongray.teamlocker.gui_client;
 import java.awt.Frame;
 import javax.swing.JOptionPane;
 import me.camerongray.teamlocker.core.LockerNonFatalException;
-import me.camerongray.teamlocker.core.LockerRemoteException;
+import me.camerongray.teamlocker.core.LockerSimpleException;
 
 /**
  *
@@ -21,7 +21,7 @@ public class ExceptionHandling {
         // Do not show details button for exceptions returned from the server,
         // stack trace/details.etc are pointless in this case
         Object[] options;
-        if (e instanceof LockerRemoteException) {
+        if (e instanceof LockerSimpleException) {
             options = new Object[]{"OK"};
         } else {
             options = new Object[]{"OK", "Details"};

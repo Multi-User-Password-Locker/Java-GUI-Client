@@ -12,19 +12,19 @@ import java.util.Arrays;
  * @author camerong
  */
 public class Validation {
-    public static void ensureNonEmpty(String value, String inputName) throws LockerRuntimeException {
+    public static void ensureNonEmpty(String value, String inputName) throws LockerSimpleException {
         if (value.isEmpty()) {
-            throw new LockerRuntimeException(inputName + " cannot be empty!");
+            throw new LockerSimpleException(inputName + " cannot be empty!");
         }
     }
     
-    public static void validatePassword(char[] password, char[] passwordConfirmation) throws LockerRuntimeException {
+    public static void validatePassword(char[] password, char[] passwordConfirmation) throws LockerSimpleException {
         if (password.length == 0) {
-            throw new LockerRuntimeException("You must specify a password!");
+            throw new LockerSimpleException("You must specify a password!");
         }
         
         if (!Arrays.equals(password, passwordConfirmation)) {
-            throw new LockerRuntimeException("Passwords do not match!");
+            throw new LockerSimpleException("Passwords do not match!");
         }
     }
 }

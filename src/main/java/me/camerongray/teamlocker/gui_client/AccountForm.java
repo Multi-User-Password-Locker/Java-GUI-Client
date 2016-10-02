@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.CryptoException;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
-import me.camerongray.teamlocker.core.LockerRemoteException;
+import me.camerongray.teamlocker.core.LockerSimpleException;
 
 /**
  *
@@ -370,7 +370,7 @@ public class AccountForm extends javax.swing.JDialog {
         }
         
         @Override
-        public String doInBackground() throws LockerRemoteException, CryptoException, LockerCommunicationException {
+        public String doInBackground() throws LockerSimpleException, CryptoException, LockerCommunicationException {
             String password = this.parent.account.getPasswordFromServer(this.parent.user.getPrivateKey());
             return password;
         }
@@ -404,7 +404,7 @@ public class AccountForm extends javax.swing.JDialog {
         }
         
         @Override
-        public Void doInBackground() throws LockerCommunicationException, CryptoException, LockerRuntimeException, LockerRemoteException {
+        public Void doInBackground() throws LockerCommunicationException, CryptoException, LockerRuntimeException, LockerSimpleException {
             if (this.parent.mode == AccountForm.NEW_MODE) {
                 Account account = new Account(this.parent.txtAccountName.getText(), this.parent.txtUsername.getText(),
                         this.parent.txtNotes.getText(), new String(this.parent.txtPassword.getPassword()));
@@ -450,7 +450,7 @@ public class AccountForm extends javax.swing.JDialog {
         }
         
         @Override
-        public Void doInBackground() throws LockerRemoteException, LockerCommunicationException {
+        public Void doInBackground() throws LockerSimpleException, LockerCommunicationException {
             this.parent.account.deleteFromServer();
             return null;
         }

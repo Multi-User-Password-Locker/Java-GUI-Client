@@ -26,7 +26,7 @@ import javax.swing.table.DefaultTableModel;
 import me.camerongray.teamlocker.core.CryptoException;
 import me.camerongray.teamlocker.core.CurrentUser;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
-import me.camerongray.teamlocker.core.LockerRemoteException;
+import me.camerongray.teamlocker.core.LockerSimpleException;
 
 /**
  *
@@ -544,7 +544,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         @Override
-        public Account[] doInBackground() throws LockerRemoteException, CryptoException, LockerCommunicationException {
+        public Account[] doInBackground() throws LockerSimpleException, CryptoException, LockerCommunicationException {
             Account[] accounts = this.folder.getAccountsFromServer(this.window.user.getPrivateKey());
             return accounts;
         }
@@ -582,7 +582,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         @Override
-        public Account doInBackground() throws LockerRemoteException, CryptoException, LockerCommunicationException {
+        public Account doInBackground() throws LockerSimpleException, CryptoException, LockerCommunicationException {
             Account account = Account.getFromServer(accountId, user.getPrivateKey());
             return account;
         }
@@ -608,7 +608,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         @Override
-        public User[] doInBackground() throws LockerRemoteException, IOException, LockerCommunicationException {
+        public User[] doInBackground() throws LockerSimpleException, IOException, LockerCommunicationException {
             User[] users = User.getAllFromServer();
             return users;
         }

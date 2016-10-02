@@ -84,26 +84,26 @@ public class Folder {
         return folders;
     }
     
-    public void addToServer() throws LockerRemoteException, LockerCommunicationException {
+    public void addToServer() throws LockerSimpleException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         
         String payload = new JSONObject().put("name", this.name).toString();
 
         JSONObject response = locker.makePutRequest("folders", payload);
         if (response.isNull("success")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
 
         this.id = response.getInt("folder_id");
     }
     
-    public FolderPermission[] getPermissionsFromServer() throws LockerRemoteException, LockerCommunicationException, IOException {
+    public FolderPermission[] getPermissionsFromServer() throws LockerSimpleException, LockerCommunicationException, IOException {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeGetRequest("folders/"+this.id+"/permissions");
 
 
         if (!response.isNull("error")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
 
         JSONArray permissions = response.getJSONArray("permissions");
@@ -129,16 +129,16 @@ public class Folder {
         return folderPermissions.toArray(new FolderPermission[folderPermissions.size()]);
     }
     
-    public void deleteFromServer() throws LockerRemoteException, LockerCommunicationException {
+    public void deleteFromServer() throws LockerSimpleException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeDeleteRequest("folders/delete/"+this.id);
 
         if (response.isNull("success")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
     }
     
-    public void updatePermissionsOnServer(FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerRemoteException, LockerCommunicationException, CryptoException, LockerRuntimeException {
+    public void updatePermissionsOnServer(FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerSimpleException, LockerCommunicationException, CryptoException, LockerRuntimeException {
         Locker locker = Locker.getInstance();
         
         JSONArray json_permissions = new JSONArray();
@@ -155,7 +155,7 @@ public class Folder {
         JSONObject response = locker.makePostRequest("folders/" + this.id + "/permissions", payload.toString());
 
         if (response.isNull("success")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
 
         // This must happen AFTER the folder permissions have been updated!
@@ -164,7 +164,7 @@ public class Folder {
         this.encryptForUsers(newReadUsers, publicKeys);
     }
     
-    public void encryptForUser(User user) throws LockerRemoteException, CryptoException, LockerCommunicationException, LockerRuntimeException {
+    public void encryptForUser(User user) throws LockerSimpleException, CryptoException, LockerCommunicationException, LockerRuntimeException {
         PublicKey[] publicKeys = new PublicKey[]{user.getPublicKey()};
         ArrayList<Integer> newReadUsers = new ArrayList<>();
         newReadUsers.add(user.getId());
@@ -172,7 +172,7 @@ public class Folder {
         this.encryptForUsers(newReadUsers, publicKeys);
     }
     
-    public void encryptForUsers(ArrayList<Integer> newReadUsers, PublicKey[] publicKeys) throws LockerRemoteException, CryptoException, LockerCommunicationException, LockerRuntimeException {
+    public void encryptForUsers(ArrayList<Integer> newReadUsers, PublicKey[] publicKeys) throws LockerSimpleException, CryptoException, LockerCommunicationException, LockerRuntimeException {
         User currentUser = CurrentUser.getInstance();
         Locker locker = Locker.getInstance();
         if (newReadUsers != null && newReadUsers.size() > 0) {
@@ -198,18 +198,18 @@ public class Folder {
             JSONObject response = locker.makePostRequest("accounts", encryptedAccounts.toString());
 
             if (response.isNull("success")) {
-                throw new LockerRemoteException(response.getString("message"));
+                throw new LockerSimpleException(response.getString("message"));
             }
         }
     }
     
-    public PublicKey[] getPublicKeysFromServer() throws LockerRemoteException, LockerCommunicationException {
+    public PublicKey[] getPublicKeysFromServer() throws LockerSimpleException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         ArrayList<PublicKey> publicKeys = new ArrayList<>();
         JSONObject response = locker.makeGetRequest("folders/"+this.id+"/public_keys");            
 
         if (!response.isNull("error")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
 
         // TODO - Rename accountArray!
@@ -222,14 +222,14 @@ public class Folder {
         return publicKeys.toArray(new PublicKey[publicKeys.size()]);
     }
     
-    public Account[] getAccountsFromServer(byte[] privateKey) throws LockerRemoteException, LockerCommunicationException, CryptoException {
+    public Account[] getAccountsFromServer(byte[] privateKey) throws LockerSimpleException, LockerCommunicationException, CryptoException {
         Locker locker = Locker.getInstance();
         ArrayList<Account> accounts = new ArrayList<>();
         
         JSONObject response = locker.makeGetRequest("folders/"+this.id+"/accounts");            
 
         if (!response.isNull("error")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
         
         JSONArray accountArray = response.getJSONArray("accounts");
@@ -243,14 +243,14 @@ public class Folder {
         return accounts.toArray(new Account[accounts.size()]);
     }
     
-    public void updateOnServer() throws LockerRemoteException, LockerCommunicationException {
+    public void updateOnServer() throws LockerSimpleException, LockerCommunicationException {
         JSONObject payload = new JSONObject();
         payload.put("name", this.name);
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makePostRequest("folders/" + this.id + "/save", payload.toString());
 
         if (response.isNull("success")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
     }
 }

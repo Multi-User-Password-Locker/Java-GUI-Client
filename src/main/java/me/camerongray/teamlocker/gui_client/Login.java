@@ -14,7 +14,7 @@ import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.CurrentUser;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
-import me.camerongray.teamlocker.core.LockerRemoteException;
+import me.camerongray.teamlocker.core.LockerSimpleException;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
 import me.camerongray.teamlocker.core.User;
 
@@ -347,7 +347,7 @@ public class Login extends javax.swing.JFrame {
         }
 
         @Override
-        public Void doInBackground() throws LockerRemoteException, LockerCommunicationException, LockerRuntimeException {
+        public Void doInBackground() throws LockerSimpleException, LockerCommunicationException, LockerRuntimeException {
             Locker locker = Locker.getInstance();
             locker.init(hostname, port, username, password);
 

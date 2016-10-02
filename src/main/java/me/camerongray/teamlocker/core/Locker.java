@@ -108,7 +108,7 @@ public class Locker {
         }
     }
 
-    public boolean checkAuth() throws LockerCommunicationException, LockerRemoteException {
+    public boolean checkAuth() throws LockerCommunicationException, LockerSimpleException {
         JSONObject response;
         try {
             response = Unirest.get(this.getUrl("check_auth")).basicAuth(this.username,
@@ -117,7 +117,7 @@ public class Locker {
             throw new LockerCommunicationException("Could not connect to server, check your network connection", e);
         }
         if (!response.isNull("error")) {
-            throw new LockerRemoteException(response.getString("message"));
+            throw new LockerSimpleException(response.getString("message"));
         }
         return true;
     }

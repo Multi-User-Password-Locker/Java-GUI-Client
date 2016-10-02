@@ -13,7 +13,7 @@ import javax.swing.SwingWorker;
 import me.camerongray.teamlocker.core.CryptoException;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
-import me.camerongray.teamlocker.core.LockerRemoteException;
+import me.camerongray.teamlocker.core.LockerSimpleException;
 import me.camerongray.teamlocker.core.LockerRuntimeException;
 import me.camerongray.teamlocker.core.User;
 
@@ -212,7 +212,7 @@ public class ChangePassword extends javax.swing.JDialog {
         }
         
         @Override
-        public Void doInBackground() throws LockerRemoteException, CryptoException, LockerCommunicationException, LockerRuntimeException {
+        public Void doInBackground() throws LockerSimpleException, CryptoException, LockerCommunicationException, LockerRuntimeException {
             this.user.changePasswordOnServer(this.newPassword);
             return null;
         }

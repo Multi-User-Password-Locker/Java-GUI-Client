@@ -9,8 +9,8 @@ package me.camerongray.teamlocker.core;
  *
  * @author camerong
  */
-public class LockerRemoteException extends LockerNonFatalException {
-    public LockerRemoteException(String message) {
+public class LockerSimpleException extends LockerNonFatalException {
+    public LockerSimpleException(String message) {
         super(message);
     }
 }
