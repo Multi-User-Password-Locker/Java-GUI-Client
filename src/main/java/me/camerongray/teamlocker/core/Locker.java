@@ -116,7 +116,7 @@ public class Locker {
         } catch (Exception e) {
             throw new LockerCommunicationException("Could not connect to server, check your network connection", e);
         }
-        if (!response.isNull("error")) {
+        if (!response.getBoolean("success")) {
             throw new LockerSimpleException(response.getString("message"));
         }
         return true;
