@@ -203,7 +203,7 @@ public class Account {
         byte[] encryptedMetadata = Base64.getDecoder().decode(accountObject.getString("account_metadata"));
         byte[] encryptedAesKey = Base64.getDecoder().decode(accountObject.getString("encrypted_aes_key"));
 
-        Account account = new Account(accountObject.getInt("id"), encryptedMetadata, encryptedAesKey, privateKey);
+        Account account = new Account(accountId, encryptedMetadata, encryptedAesKey, privateKey);
         return account;
     }
 }
