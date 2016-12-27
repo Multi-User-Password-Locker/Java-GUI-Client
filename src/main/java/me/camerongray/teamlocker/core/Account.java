@@ -123,7 +123,7 @@ public class Account {
         String payload = new JSONObject().put("folder_id", folder.getId())
                 .put("encrypted_account_data", accounts).toString();
 
-        JSONObject response = locker.makePutRequest("accounts/add", payload);
+        JSONObject response = locker.makePutRequest("accounts", payload);
 
         if (!response.isNull("error")) {
             throw new LockerSimpleException(response.getString("message"));
