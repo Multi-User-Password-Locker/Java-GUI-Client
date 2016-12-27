@@ -131,7 +131,7 @@ public class Folder {
     
     public void deleteFromServer() throws LockerSimpleException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
-        JSONObject response = locker.makeDeleteRequest("folders/delete/"+this.id);
+        JSONObject response = locker.makeDeleteRequest("folders/"+this.id);
 
         if (response.isNull("success")) {
             throw new LockerSimpleException(response.getString("message"));
