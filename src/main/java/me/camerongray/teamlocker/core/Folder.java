@@ -90,7 +90,7 @@ public class Folder {
         String payload = new JSONObject().put("name", this.name).toString();
 
         JSONObject response = locker.makePutRequest("folders", payload);
-        if (response.isNull("success")) {
+        if (!response.isNull("error")) {
             throw new LockerSimpleException(response.getString("message"));
         }
 
@@ -133,7 +133,7 @@ public class Folder {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeDeleteRequest("folders/"+this.id);
 
-        if (response.isNull("success")) {
+        if (!response.isNull("error")) {
             throw new LockerSimpleException(response.getString("message"));
         }
     }
@@ -161,7 +161,7 @@ public class Folder {
         payload.put("permissions", json_permissions);
         JSONObject response = locker.makePostRequest("folders/" + this.id + "/permissions", payload.toString());
 
-        if (response.isNull("success")) {
+        if (!response.isNull("error")) {
             throw new LockerSimpleException(response.getString("message"));
         }
 
@@ -204,7 +204,7 @@ public class Folder {
 
             JSONObject response = locker.makePostRequest("accounts", encryptedAccounts.toString());
 
-            if (response.isNull("success")) {
+            if (!response.isNull("error")) {
                 throw new LockerSimpleException(response.getString("message"));
             }
         }
@@ -256,7 +256,7 @@ public class Folder {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makePostRequest("folders/" + this.id + "/save", payload.toString());
 
-        if (response.isNull("success")) {
+        if (!response.isNull("error")) {
             throw new LockerSimpleException(response.getString("message"));
         }
     }

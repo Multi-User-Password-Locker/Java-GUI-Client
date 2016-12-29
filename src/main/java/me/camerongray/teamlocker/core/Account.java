@@ -84,7 +84,7 @@ public class Account {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeDeleteRequest("accounts/"+this.id);
 
-        if (response.isNull("success")) {
+        if (!response.isNull("error")) {
             throw new LockerSimpleException(response.getString("message"));
         }
     }
