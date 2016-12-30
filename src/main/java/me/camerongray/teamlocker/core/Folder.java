@@ -201,8 +201,8 @@ public class Folder {
                         .put("account_id", a.getId())
                         .put("encrypted_account_data", ead));
             }
-
-            JSONObject response = locker.makePostRequest("accounts", encryptedAccounts.toString());
+            JSONObject payload = new JSONObject().put("accounts", encryptedAccounts);
+            JSONObject response = locker.makePostRequest("accounts", payload.toString());
 
             if (!response.isNull("error")) {
                 throw new LockerSimpleException(response.getString("message"));
@@ -254,7 +254,7 @@ public class Folder {
         JSONObject payload = new JSONObject();
         payload.put("name", this.name);
         Locker locker = Locker.getInstance();
-        JSONObject response = locker.makePostRequest("folders/" + this.id + "/save", payload.toString());
+        JSONObject response = locker.makePostRequest("folders/" + this.id, payload.toString());
 
         if (!response.isNull("error")) {
             throw new LockerSimpleException(response.getString("message"));
