@@ -6,6 +6,7 @@
 package me.camerongray.teamlocker.gui_client;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,12 +34,13 @@ public class UserForm extends javax.swing.JDialog {
     private Locker locker;
     private StatusBar statusBar;
     private java.awt.Frame parent;
+    private javax.swing.JDialog indexDialog;
     private Folder[] folders;
 
     /**
      * Creates new form UserForm
      */
-    public UserForm(java.awt.Frame parent, boolean modal, int mode, Folder[] folders) {
+    public UserForm(java.awt.Frame parent, boolean modal, javax.swing.JDialog indexDialog, int mode, Folder[] folders) {
         super(parent, modal);
         this.mode = mode;
         this.locker = Locker.getInstance();
@@ -46,6 +48,7 @@ public class UserForm extends javax.swing.JDialog {
         this.statusBar = new StatusBar(lblStatus, pgbProgress);
         this.statusBar.hide();
         this.parent = parent;
+        this.indexDialog = indexDialog;
         this.folders = folders;
         
         lblAdminPermissions.setVisible(false);
@@ -312,6 +315,11 @@ public class UserForm extends javax.swing.JDialog {
             }
         }
         
+        if (!Arrays.equals(txtPassword.getPassword(), txtPasswordConfirm.getPassword())) {
+            JOptionPane.showMessageDialog(this, "Passwords do not match!", "Error!", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         statusBar.setStatus("Adding User...", true);
         
         (new AddUserTask(this, this.locker, txtUsername.getText(), new String(txtPassword.getPassword()), txtFullName.getText(), txtEmail.getText(), isAdmin)).execute();
@@ -430,6 +438,7 @@ public class UserForm extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this.dialog, "User has been added successfully!",
                             "Add User", JOptionPane.INFORMATION_MESSAGE);
             this.dialog.dispose();
+            indexDialog.dispose();
         }
     }
 }

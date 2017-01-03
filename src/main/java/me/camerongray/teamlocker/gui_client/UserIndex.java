@@ -180,7 +180,7 @@ public class UserIndex extends javax.swing.JDialog {
 
     private void btnNewUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewUserActionPerformed
         statusBar.setStatus("Getting folders...", true);
-        (new NewUserTask()).execute();
+        (new NewUserTask(this)).execute();
     }//GEN-LAST:event_btnNewUserActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -194,6 +194,11 @@ public class UserIndex extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     class NewUserTask extends SwingWorker<Folder[], Object> {
+        javax.swing.JDialog indexDialog;
+        public NewUserTask(javax.swing.JDialog indexDialog) {
+            this.indexDialog = indexDialog;
+        }
+        
         public Folder[] doInBackground() throws LockerCommunicationException, IOException {
             Folder[] folders = Folder.getAllFromServer();
             return folders;
@@ -203,7 +208,7 @@ public class UserIndex extends javax.swing.JDialog {
             statusBar.hide();
             try {
                 Folder[] folders = get();
-                (new UserForm(parent, true, UserForm.NEW_MODE, folders)).setVisible(true);
+                (new UserForm(parent, true, indexDialog, UserForm.NEW_MODE, folders)).setVisible(true);
             } catch (Exception e) {
                 ExceptionHandling.handleSwingWorkerException(parent, e);
             }
