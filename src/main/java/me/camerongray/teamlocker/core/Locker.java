@@ -58,17 +58,28 @@ public class Locker {
     }
     
     public String getUrl(String path) {
+        return this.getUrl(path, null);
+    }
+    
+    public String getUrl(String path, Transaction transaction) {
         URIBuilder u = new URIBuilder();
         u.setScheme("http");
         u.setHost(this.server);
         u.setPort(this.port);
         u.setPath("/"+path+"/");
+        if (transaction != null) {
+            u.addParameter("transaction_id", transaction.getId());
+        }
         return u.toString();
     }
     
     public JSONObject makeGetRequest(String url) throws LockerCommunicationException {
+        return this.makeGetRequest(url, null);
+    }
+    
+    public JSONObject makeGetRequest(String url, Transaction transaction) throws LockerCommunicationException {
         try {
-            return Unirest.get(this.getUrl(url)).basicAuth(this.username,
+            return Unirest.get(this.getUrl(url, transaction)).basicAuth(this.username,
                     this.auth_key).asJson().getBody().getObject();
         } catch (UnirestException e) {
             throw new LockerCommunicationException(e);
@@ -76,8 +87,12 @@ public class Locker {
     }
     
     public JSONObject makePostRequest(String url, String payload) throws LockerCommunicationException {
+        return this.makePostRequest(url, payload, null);
+    }
+    
+    public JSONObject makePostRequest(String url, String payload, Transaction transaction) throws LockerCommunicationException {
         try {
-            return Unirest.post(this.getUrl(url))
+            return Unirest.post(this.getUrl(url, transaction))
                     .basicAuth(this.username, this.auth_key)
                     .header("accept", "application/json")
                     .header("content-type", "application/json")
@@ -88,8 +103,12 @@ public class Locker {
     }
     
     public JSONObject makePutRequest(String url, String payload) throws LockerCommunicationException {
+        return this.makePutRequest(url, payload, null);
+    }
+    
+    public JSONObject makePutRequest(String url, String payload, Transaction transaction) throws LockerCommunicationException {
         try {
-            return Unirest.put(this.getUrl(url))
+            return Unirest.put(this.getUrl(url, transaction))
                     .basicAuth(this.username, this.auth_key)
                     .header("accept", "application/json")
                     .header("content-type", "application/json")
@@ -98,9 +117,14 @@ public class Locker {
             throw new LockerCommunicationException(e);
         }
     }
+    
     public JSONObject makeDeleteRequest(String url) throws LockerCommunicationException {
+        return this.makeDeleteRequest(url, null);
+    }
+    
+    public JSONObject makeDeleteRequest(String url, Transaction transaction) throws LockerCommunicationException {
         try {
-            return Unirest.delete(this.getUrl(url))
+            return Unirest.delete(this.getUrl(url, transaction))
                     .basicAuth(this.username, this.auth_key)
                     .asJson().getBody().getObject();
         } catch (UnirestException e) {

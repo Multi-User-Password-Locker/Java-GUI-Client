@@ -88,12 +88,12 @@ public class Folder {
         Locker locker = Locker.getInstance();
         
         String payload = new JSONObject().put("name", this.name).toString();
-
+                
         JSONObject response = locker.makePutRequest("folders", payload);
         if (!response.isNull("error")) {
             throw new LockerSimpleException(response.getString("message"));
         }
-
+                
         this.id = response.getInt("folder_id");
     }
     
