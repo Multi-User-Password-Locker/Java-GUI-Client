@@ -76,7 +76,7 @@ public class Folder {
         return this.name;
     }
     
-    public static Folder[] getAllFromServer() throws LockerCommunicationException, IOException {
+    public static Folder[] getAllFromServer() throws LockerCommunicationException, IOException, LockerSimpleException {
         Locker locker = Locker.getInstance();
         String response = locker.makeGetRequest("folders").getJSONArray("folders").toString();
 
@@ -86,7 +86,7 @@ public class Folder {
     
     public void addToServer() throws LockerSimpleException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
-        
+                
         String payload = new JSONObject().put("name", this.name).toString();
                 
         JSONObject response = locker.makePutRequest("folders", payload);

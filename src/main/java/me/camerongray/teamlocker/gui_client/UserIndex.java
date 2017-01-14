@@ -13,6 +13,7 @@ import javax.swing.table.DefaultTableModel;
 import me.camerongray.teamlocker.core.Folder;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
+import me.camerongray.teamlocker.core.LockerSimpleException;
 import me.camerongray.teamlocker.core.User;
 
 /**
@@ -199,7 +200,7 @@ public class UserIndex extends javax.swing.JDialog {
             this.indexDialog = indexDialog;
         }
         
-        public Folder[] doInBackground() throws LockerCommunicationException, IOException {
+        public Folder[] doInBackground() throws LockerCommunicationException, IOException, LockerSimpleException {
             Folder[] folders = Folder.getAllFromServer();
             return folders;
         }

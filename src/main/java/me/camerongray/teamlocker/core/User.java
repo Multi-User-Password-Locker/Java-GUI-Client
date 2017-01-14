@@ -147,7 +147,7 @@ public class User {
         return isCurrentUser;
     }
     
-    public static User getCurrentFromServer() throws IOException, LockerCommunicationException, CryptoException  {
+    public static User getCurrentFromServer() throws IOException, LockerCommunicationException, CryptoException, LockerSimpleException  {
         Locker locker = Locker.getInstance();
         String response = locker.makeGetRequest("users/self").getJSONObject("user").toString();
 

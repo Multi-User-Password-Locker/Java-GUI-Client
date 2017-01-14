@@ -25,7 +25,7 @@ public class CurrentUser {
         return instance;
     }
     
-    public static void init() throws LockerRuntimeException, IOException, LockerCommunicationException, CryptoException {
+    public static void init() throws LockerRuntimeException, IOException, LockerCommunicationException, CryptoException, LockerSimpleException {
         instance = User.getCurrentFromServer();
     }
 }
