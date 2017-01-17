@@ -147,28 +147,35 @@ public class Folder {
     
     public void updatePermissionsOnServer(FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerSimpleException, LockerCommunicationException, CryptoException, LockerRuntimeException {
         Locker locker = Locker.getInstance();
+        locker.startTransaction();
         
-        JSONArray json_permissions = new JSONArray();
-        for (FolderPermission p : permissions) {
-            JSONObject permission = new JSONObject();
-            permission.put("user_id", p.getUser().getId());
-            permission.put("read", p.isRead());
-            permission.put("write", p.isWrite());
-            json_permissions.put(permission);
+        try {
+            JSONArray json_permissions = new JSONArray();
+            for (FolderPermission p : permissions) {
+                JSONObject permission = new JSONObject();
+                permission.put("user_id", p.getUser().getId());
+                permission.put("read", p.isRead());
+                permission.put("write", p.isWrite());
+                json_permissions.put(permission);
+            }
+
+            JSONObject payload = new JSONObject();
+            payload.put("permissions", json_permissions);
+            JSONObject response = locker.makePostRequest("folders/" + this.id + "/permissions", payload.toString());
+
+            if (!response.isNull("error")) {
+                throw new LockerSimpleException(response.getString("message"));
+            }
+
+            // This must happen AFTER the folder permissions have been updated!
+            PublicKey[] publicKeys = this.getPublicKeysFromServer();
+
+            this.encryptForUsers(newReadUsers, publicKeys);
+            locker.commitTransaction();
+        } catch (Exception ex) {
+            locker.rollbackTransaction();
+            throw ex;
         }
-
-        JSONObject payload = new JSONObject();
-        payload.put("permissions", json_permissions);
-        JSONObject response = locker.makePostRequest("folders/" + this.id + "/permissions", payload.toString());
-
-        if (!response.isNull("error")) {
-            throw new LockerSimpleException(response.getString("message"));
-        }
-
-        // This must happen AFTER the folder permissions have been updated!
-        PublicKey[] publicKeys = this.getPublicKeysFromServer();
-
-        this.encryptForUsers(newReadUsers, publicKeys);
     }
     
     public void encryptForUser(User user) throws LockerSimpleException, CryptoException, LockerCommunicationException, LockerRuntimeException {
