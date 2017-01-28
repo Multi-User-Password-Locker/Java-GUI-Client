@@ -7,7 +7,9 @@ package me.camerongray.teamlocker.core;
 
 import java.io.IOException;
 import java.security.KeyPair;
+import java.util.ArrayList;
 import java.util.Base64;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -160,6 +162,19 @@ public class User {
         return user;
     }
     
+    public static User getFromServer(int userId) throws IOException, LockerCommunicationException, CryptoException, LockerSimpleException  {
+        Locker locker = Locker.getInstance();
+        String response = locker.makeGetRequest("users/"+userId).getJSONObject("user").toString();
+
+        User user = locker.getObjectMapper().readValue(response, User.class);
+        user.setIsCurrentUser(false);
+
+        // Decrypts the private key
+        user.setPrivateKey(Crypto.aesDecrypt(locker.getPassword(), user.getPbkdf2Salt(), user.getAesIv(), user.getEncryptedPrivateKey()));
+
+        return user;
+    }
+    
     public static User[] getAllFromServer() throws LockerSimpleException, IOException, LockerCommunicationException {
         Locker locker = Locker.getInstance();
         JSONObject response = locker.makeGetRequest("users");
@@ -249,5 +264,17 @@ public class User {
         }
 
         return this;
+    }
+    
+    public static FolderPermission[] getPermissionsFromServer(User user) throws IOException, LockerCommunicationException, CryptoException, LockerSimpleException  {
+        Locker locker = Locker.getInstance();
+        JSONArray permissions = locker.makeGetRequest("users/"+user.getId()+"/permissions").getJSONArray("permissions");
+
+        ArrayList<FolderPermission> permissionList = new ArrayList<>();
+        for (int i = 0; i < permissions.length(); i++) {
+            JSONObject permission = permissions.getJSONObject(i);
+            permissionList.add(new FolderPermission(user, new Folder(permission.getInt("folder_id")), permission.getBoolean("read"), permission.getBoolean("write")));
+        }
+        return permissionList.toArray(new FolderPermission[permissionList.size()]);
     }
 }

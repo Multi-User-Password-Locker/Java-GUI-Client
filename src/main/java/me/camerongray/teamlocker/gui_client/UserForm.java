@@ -37,12 +37,10 @@ public class UserForm extends javax.swing.JDialog {
     private javax.swing.JDialog indexDialog;
     private Folder[] folders;
 
-    /**
-     * Creates new form UserForm
-     */
-    public UserForm(java.awt.Frame parent, boolean modal, javax.swing.JDialog indexDialog, int mode, Folder[] folders) {
+    // Show form for creating a new user
+    public UserForm(java.awt.Frame parent, boolean modal, javax.swing.JDialog indexDialog, Folder[] folders) {
         super(parent, modal);
-        this.mode = mode;
+        this.mode = UserForm.NEW_MODE;
         this.locker = Locker.getInstance();
         initComponents();
         this.statusBar = new StatusBar(lblStatus, pgbProgress);
@@ -52,21 +50,39 @@ public class UserForm extends javax.swing.JDialog {
         this.folders = folders;
         
         lblAdminPermissions.setVisible(false);
-        if (mode == UserForm.EDIT_MODE) {
-            this.setTitle("Edit User - TeamLocker");
-            btnSubmit.setText("Save User");
-            txtPassword.setVisible(false);
-            txtPasswordConfirm.setVisible(false);
-            lblPassword.setVisible(false);
-            lblPasswordConfirm.setVisible(false);
-        } else  {
-            this.setTitle("New User - TeamLocker");
-            btnSubmit.setText("Add User");
-            btnChangePassword.setVisible(false);
-            DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
-            for (Folder folder : this.folders) {
-                model.addRow(new Object[]{folder, false, false});
-            }
+        this.setTitle("New User - TeamLocker");
+        btnSubmit.setText("Add User");
+        btnChangePassword.setVisible(false);
+        DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
+        for (Folder folder : this.folders) {
+            model.addRow(new Object[]{folder, false, false});
+        }
+        this.getRootPane().setDefaultButton(btnSubmit);
+    }
+    
+    // Show form for editing and existing user
+    public UserForm(java.awt.Frame parent, boolean modal, javax.swing.JDialog indexDialog, Folder[] folders, User user, FolderPermission[] folderPermissions) {
+        super(parent, modal);
+        this.mode = UserForm.NEW_MODE;
+        this.locker = Locker.getInstance();
+        initComponents();
+        this.statusBar = new StatusBar(lblStatus, pgbProgress);
+        this.statusBar.hide();
+        this.parent = parent;
+        this.indexDialog = indexDialog;
+        this.folders = folders;
+        
+        lblAdminPermissions.setVisible(false);
+        this.setTitle("Edit User - TeamLocker");
+        btnSubmit.setText("Save User");
+        txtPassword.setVisible(false);
+        txtPasswordConfirm.setVisible(false);
+        lblPassword.setVisible(false);
+        lblPasswordConfirm.setVisible(false);
+
+        DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
+        for (Folder folder : this.folders) {
+            model.addRow(new Object[]{folder, false, false});
         }
         this.getRootPane().setDefaultButton(btnSubmit);
     }

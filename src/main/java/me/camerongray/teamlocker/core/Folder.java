@@ -38,6 +38,10 @@ public class Folder {
         this.name = name;
     }
     
+    public Folder(int id) {
+        this.id = id;
+    }
+    
     public Folder() {}
 
     public int getId() {

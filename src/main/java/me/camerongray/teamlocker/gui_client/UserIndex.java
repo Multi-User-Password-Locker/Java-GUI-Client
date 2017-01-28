@@ -7,10 +7,13 @@ package me.camerongray.teamlocker.gui_client;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.HashMap;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
+import me.camerongray.teamlocker.core.CryptoException;
 import me.camerongray.teamlocker.core.Folder;
+import me.camerongray.teamlocker.core.FolderPermission;
 import me.camerongray.teamlocker.core.Locker;
 import me.camerongray.teamlocker.core.LockerCommunicationException;
 import me.camerongray.teamlocker.core.LockerSimpleException;
@@ -24,6 +27,7 @@ public class UserIndex extends javax.swing.JDialog {
     private ButtonColumn bcEdit;
     private StatusBar statusBar;
     java.awt.Frame parent;
+    private HashMap<Integer, Integer> rowUserIds = new HashMap<>();
     /**
      * Creates new form UserIndex
      */
@@ -40,15 +44,20 @@ public class UserIndex extends javax.swing.JDialog {
             new javax.swing.AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
-                    
+                    int userId = rowUserIds.get(Integer.parseInt(evt.getActionCommand()));
+                    statusBar.setStatus("Getting User...", true);
+                    (new EditUserTask(UserIndex.this, userId)).run();
                 }
             }
         ,EDIT_COLUMN_INDEX);
         
         DefaultTableModel model = (DefaultTableModel)tblUsers.getModel();
+        int rowNum = 0;
         for (User user : users) {
             model.addRow(new Object[]{user.getFullName(), user.getUsername(),
                 (user.isAdmin()) ? "Administrator" : "Standard User", user.getEmail(), "Edit User"});
+            this.rowUserIds.put(rowNum, user.getId());
+            rowNum++;
         }
     }
 
@@ -209,10 +218,40 @@ public class UserIndex extends javax.swing.JDialog {
             statusBar.hide();
             try {
                 Folder[] folders = get();
-                (new UserForm(parent, true, indexDialog, UserForm.NEW_MODE, folders)).setVisible(true);
+                (new UserForm(parent, true, indexDialog, folders)).setVisible(true);
             } catch (Exception e) {
                 ExceptionHandling.handleSwingWorkerException(parent, e);
             }
+        }
+    }
+    
+    class EditUserTask extends SwingWorker<Folder[], Object> {
+        javax.swing.JDialog indexDialog;
+        int userId;
+        public EditUserTask(javax.swing.JDialog indexDialog, int userId) {
+            this.indexDialog = indexDialog;
+            this.userId = userId;
+        }
+        
+        public Folder[] doInBackground() throws LockerCommunicationException, IOException, LockerSimpleException, CryptoException {
+            Folder[] folders = Folder.getAllFromServer();
+            User user = User.getFromServer(userId);
+            System.out.println(user.getFullName());
+            FolderPermission[] permissions = User.getPermissionsFromServer(user);
+            for (FolderPermission permission : permissions) {
+                System.out.println(permission.getFolder().getId());
+            }
+            return folders; // TODO - Return all variables above
+        }
+        
+        public void done() {
+            statusBar.hide();
+//            try {
+//                Folder[] folders = get();
+//                (new UserForm(parent, true, indexDialog, folders)).setVisible(true);
+//            } catch (Exception e) {
+//                ExceptionHandling.handleSwingWorkerException(parent, e);
+//            }
         }
     }
 }
