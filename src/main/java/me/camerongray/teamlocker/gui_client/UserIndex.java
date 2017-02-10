@@ -225,7 +225,7 @@ public class UserIndex extends javax.swing.JDialog {
         }
     }
     
-    class EditUserTask extends SwingWorker<Folder[], Object> {
+    class EditUserTask extends SwingWorker<Object, Object> {
         javax.swing.JDialog indexDialog;
         int userId;
         public EditUserTask(javax.swing.JDialog indexDialog, int userId) {
@@ -233,7 +233,19 @@ public class UserIndex extends javax.swing.JDialog {
             this.userId = userId;
         }
         
-        public Folder[] doInBackground() throws LockerCommunicationException, IOException, LockerSimpleException, CryptoException {
+        class WorkerResult {
+            public Folder[] folders;
+            public User user;
+            public FolderPermission[] permissions;
+
+            public WorkerResult(Folder[] folders, User user, FolderPermission[] permissions) {
+                this.folders = folders;
+                this.user = user;
+                this.permissions = permissions;
+            }
+        }
+        
+        public WorkerResult doInBackground() throws LockerCommunicationException, IOException, LockerSimpleException, CryptoException {
             Folder[] folders = Folder.getAllFromServer();
             User user = User.getFromServer(userId);
             System.out.println(user.getFullName());
@@ -241,17 +253,17 @@ public class UserIndex extends javax.swing.JDialog {
             for (FolderPermission permission : permissions) {
                 System.out.println(permission.getFolder().getId());
             }
-            return folders; // TODO - Return all variables above
+            return new WorkerResult(folders, user, permissions);
         }
         
         public void done() {
             statusBar.hide();
-//            try {
-//                Folder[] folders = get();
-//                (new UserForm(parent, true, indexDialog, folders)).setVisible(true);
-//            } catch (Exception e) {
-//                ExceptionHandling.handleSwingWorkerException(parent, e);
-//            }
+            try {
+                WorkerResult result = (WorkerResult)get();
+                (new UserForm(parent, true, indexDialog, result.folders, result.user, result.permissions)).setVisible(true);
+            } catch (Exception e) {
+                ExceptionHandling.handleSwingWorkerException(parent, e);
+            }
         }
     }
 }

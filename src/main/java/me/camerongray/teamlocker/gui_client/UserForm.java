@@ -7,6 +7,7 @@ package me.camerongray.teamlocker.gui_client;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,10 +80,28 @@ public class UserForm extends javax.swing.JDialog {
         txtPasswordConfirm.setVisible(false);
         lblPassword.setVisible(false);
         lblPasswordConfirm.setVisible(false);
+        
+        txtFullName.setText(user.getFullName());
+        txtUsername.setText(user.getUsername());
+        txtEmail.setText(user.getEmail());
+        
+        if (user.isAdmin()) {
+            lstUserType.setSelectedItem("Administrator");
+        }
+        
+        HashMap<Integer, FolderPermission> folderPermissionsLookup = new HashMap<>();
+        for (FolderPermission permission : folderPermissions) {
+            folderPermissionsLookup.put(permission.getFolder().getId(), permission);
+        }
 
         DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
+        FolderPermission defaultPermission = new FolderPermission(null, null, false, false);
         for (Folder folder : this.folders) {
-            model.addRow(new Object[]{folder, false, false});
+            FolderPermission permission = folderPermissionsLookup.get(folder.getId());
+            if (permission == null) {
+                permission = defaultPermission;
+            }
+            model.addRow(new Object[]{folder, permission.isRead(), permission.isWrite()});
         }
         this.getRootPane().setDefaultButton(btnSubmit);
     }
