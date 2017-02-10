@@ -218,6 +218,22 @@ public class User {
         }
     }
     
+    public void updateOnServer() throws LockerSimpleException, CryptoException, LockerCommunicationException, LockerRuntimeException {       
+        Locker locker = Locker.getInstance();
+        
+        String payload = (new JSONObject()
+                .put("username", this.username)
+                .put("full_name", this.fullName)
+                .put("email", this.email)
+                .put("admin", this.admin)).toString();
+
+        JSONObject response = locker.makePostRequest("users/"+this.id, payload);
+
+        if (!response.isNull("error")) {
+            throw new LockerSimpleException(response.getString("message"));
+        }
+    }
+    
     public User addToServer() throws LockerSimpleException, CryptoException, IOException, LockerCommunicationException, LockerRuntimeException {
         Validation.ensureNonEmpty(this.username, "Username");
         Validation.ensureNonEmpty(this.password, "Password");

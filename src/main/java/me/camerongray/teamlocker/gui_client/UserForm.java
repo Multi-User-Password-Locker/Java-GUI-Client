@@ -37,6 +37,7 @@ public class UserForm extends javax.swing.JDialog {
     private java.awt.Frame parent;
     private javax.swing.JDialog indexDialog;
     private Folder[] folders;
+    private User user;
 
     // Show form for creating a new user
     public UserForm(java.awt.Frame parent, boolean modal, javax.swing.JDialog indexDialog, Folder[] folders) {
@@ -64,7 +65,7 @@ public class UserForm extends javax.swing.JDialog {
     // Show form for editing and existing user
     public UserForm(java.awt.Frame parent, boolean modal, javax.swing.JDialog indexDialog, Folder[] folders, User user, FolderPermission[] folderPermissions) {
         super(parent, modal);
-        this.mode = UserForm.NEW_MODE;
+        this.mode = UserForm.EDIT_MODE;
         this.locker = Locker.getInstance();
         initComponents();
         this.statusBar = new StatusBar(lblStatus, pgbProgress);
@@ -72,6 +73,7 @@ public class UserForm extends javax.swing.JDialog {
         this.parent = parent;
         this.indexDialog = indexDialog;
         this.folders = folders;
+        this.user = user;
         
         lblAdminPermissions.setVisible(false);
         this.setTitle("Edit User - TeamLocker");
@@ -339,11 +341,11 @@ public class UserForm extends javax.swing.JDialog {
         boolean isAdmin = ((String)lstUserType.getSelectedItem()).equals("Administrator");
         
         if (isAdmin) {
-            int confirm = JOptionPane.showConfirmDialog(this, "You are about to create a"+
-                    " user with administrator privileges.\n\nThis means that the user has"+
+            int confirm = JOptionPane.showConfirmDialog(this, "You are about to give a"+
+                    " user administrator privileges.\n\nThis means that the user has"+
                     " full control over all accounts in the system, can add/modify users"+
                     " and cannot be restricted to specific folders.\n\nAre you sure that you"+
-                    " want to continue?", "Creating Administrator User",
+                    " want to continue?", "Granting Administrator Privileges",
                     JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.NO_OPTION) {
                 return;
@@ -355,9 +357,17 @@ public class UserForm extends javax.swing.JDialog {
             return;
         }
         
-        statusBar.setStatus("Adding User...", true);
-        
-        (new AddUserTask(this, this.locker, txtUsername.getText(), new String(txtPassword.getPassword()), txtFullName.getText(), txtEmail.getText(), isAdmin)).execute();
+        if (this.mode == UserForm.NEW_MODE) {
+            statusBar.setStatus("Adding User...", true);
+            (new AddUserTask(this, this.locker, txtUsername.getText(), new String(txtPassword.getPassword()), txtFullName.getText(), txtEmail.getText(), isAdmin)).execute();
+        } else {
+            statusBar.setStatus("Saving User...", true);
+            user.setUsername(txtUsername.getText());
+            user.setFullName(txtFullName.getText());
+            user.setEmail(txtEmail.getText());
+            user.setAdmin(isAdmin);
+            (new UpdateUserTask(this, this.locker, user)).execute();
+        }
     }//GEN-LAST:event_btnSubmitActionPerformed
 
     private void lstUserTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lstUserTypeActionPerformed
@@ -476,4 +486,75 @@ public class UserForm extends javax.swing.JDialog {
             indexDialog.dispose();
         }
     }
+    
+    class UpdateUserTask extends SwingWorker<Void, String> {
+        private UserForm dialog;
+        private Locker locker;
+        private User user;
+
+        public UpdateUserTask(UserForm dialog, Locker locker, User user) {
+            this.dialog = dialog;
+            this.locker = locker;
+            this.user = user;
+        }
+
+        @Override
+        protected Void doInBackground() throws LockerSimpleException, CryptoException, LockerCommunicationException, IOException, LockerRuntimeException {
+            // TEMPOARY BODGE!
+            // TODO: This should be removed once server-side transactions are implemented
+            DefaultTableModel model2 = (DefaultTableModel) tblPermissions.getModel();
+            for (int i = 0; i < model2.getRowCount(); i++) {
+                boolean read = (Boolean)model2.getValueAt(i, 1);
+                boolean write = (Boolean)model2.getValueAt(i, 2);
+                if (write && !read) {
+                    throw new LockerSimpleException("Must have read permission to have write permission on a folder.");
+                }
+            }
+            
+            this.user.updateOnServer();
+            
+//            if (!user.isAdmin()) {
+//                final int FOLDER_COL = 0;
+//                final int READ_COL = 1;
+//                final int WRITE_COL = 2;
+//                publish("Setting permissions...");
+//                DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
+//                for (int i = 0; i < model.getRowCount(); i++) {
+//                    Folder folder = (Folder)model.getValueAt(i, FOLDER_COL);
+//                    boolean read = (Boolean)model.getValueAt(i, READ_COL);
+//                    boolean write = (Boolean)model.getValueAt(i, WRITE_COL);
+//                    // TODO: This should be removed once server-side transactions are implemented
+//                    if (write && !read) {
+//                        throw new LockerSimpleException("Must have read permission to have write permission on a folder.");
+//                    }
+//                    FolderPermission fp = new FolderPermission(user, folder, read, write);
+//                    folder.updatePermissionsOnServer(fp);
+//                }
+//            }
+            
+            return null;
+        }
+        
+        @Override
+        protected void process(List<String> chunks) {
+            String status = chunks.get(chunks.size() - 1); // Last status in list
+            statusBar.setStatus(status, true);
+        }
+        
+        @Override
+        protected void done() {
+            statusBar.hide();
+            try {
+                get();
+            } catch (Exception e) {
+                ExceptionHandling.handleSwingWorkerException(this.dialog.parent, e);
+                return;
+            }
+            JOptionPane.showMessageDialog(this.dialog, "User has been saved successfully!",
+                            "Save User", JOptionPane.INFORMATION_MESSAGE);
+            this.dialog.dispose();
+            indexDialog.dispose();
+        }
+    }
+
 }
