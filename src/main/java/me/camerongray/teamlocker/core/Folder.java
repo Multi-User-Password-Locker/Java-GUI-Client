@@ -149,6 +149,7 @@ public class Folder {
         this.updatePermissionsOnServer(permissions, newReadUsers);
     }
     
+    // TODO - Move into FolderPermission.java?
     public void updatePermissionsOnServer(FolderPermission[] permissions, ArrayList<Integer> newReadUsers) throws LockerSimpleException, LockerCommunicationException, CryptoException, LockerRuntimeException {
         Locker locker = Locker.getInstance();
         locker.startTransaction();

@@ -443,7 +443,12 @@ public class UserForm extends javax.swing.JDialog {
             User user = new User(this.fullName, this.username, this.email, this.password, this.isAdmin);
             user.addToServer();
             
-            if (!user.isAdmin()) {
+            if (user.isAdmin()) {
+                Folder[] folders = Folder.getAllFromServer();
+                for (Folder folder : folders) {
+                    folder.encryptForUser(user);
+                }
+            } else {
                 final int FOLDER_COL = 0;
                 final int READ_COL = 1;
                 final int WRITE_COL = 2;

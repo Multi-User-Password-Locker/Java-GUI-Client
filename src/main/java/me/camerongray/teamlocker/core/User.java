@@ -272,13 +272,6 @@ public class User {
 
         this.id = response.getInt("user_id");
 
-        if (this.admin) {
-            Folder[] folders = Folder.getAllFromServer();
-            for (Folder folder : folders) {
-                folder.encryptForUser(this);
-            }
-        }
-
         return this;
     }
     
