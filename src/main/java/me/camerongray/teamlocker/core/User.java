@@ -275,6 +275,7 @@ public class User {
         return this;
     }
     
+    // TODO - Why is this static?
     public static FolderPermission[] getPermissionsFromServer(User user) throws IOException, LockerCommunicationException, CryptoException, LockerSimpleException  {
         Locker locker = Locker.getInstance();
         JSONArray permissions = locker.makeGetRequest("users/"+user.getId()+"/permissions").getJSONArray("permissions");
@@ -285,5 +286,15 @@ public class User {
             permissionList.add(new FolderPermission(user, new Folder(permission.getInt("folder_id")), permission.getBoolean("read"), permission.getBoolean("write")));
         }
         return permissionList.toArray(new FolderPermission[permissionList.size()]);
+    }
+    
+    public void deletePermissionsFromServer() throws LockerSimpleException, LockerCommunicationException {
+        Locker locker = Locker.getInstance();
+        
+        JSONObject response = locker.makeDeleteRequest("users/"+this.id+"/permissions");
+        
+        if (!response.isNull("error")) {
+            throw new LockerSimpleException(response.getString("message"));
+        }
     }
 }

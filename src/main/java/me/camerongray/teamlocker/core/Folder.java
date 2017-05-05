@@ -145,7 +145,9 @@ public class Folder {
     public void updatePermissionsOnServer(FolderPermission permission) throws LockerSimpleException, LockerCommunicationException, CryptoException, LockerRuntimeException {
         FolderPermission[] permissions = new FolderPermission[]{permission};
         ArrayList<Integer> newReadUsers = new ArrayList<Integer>();
-        newReadUsers.add(permission.getUser().getId());
+        if (permission.isRead()) {
+            newReadUsers.add(permission.getUser().getId());
+        }
         this.updatePermissionsOnServer(permissions, newReadUsers);
     }
     

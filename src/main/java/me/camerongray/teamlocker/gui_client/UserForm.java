@@ -518,24 +518,31 @@ public class UserForm extends javax.swing.JDialog {
             
             this.user.updateOnServer();
             
-//            if (!user.isAdmin()) {
-//                final int FOLDER_COL = 0;
-//                final int READ_COL = 1;
-//                final int WRITE_COL = 2;
-//                publish("Setting permissions...");
-//                DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
-//                for (int i = 0; i < model.getRowCount(); i++) {
-//                    Folder folder = (Folder)model.getValueAt(i, FOLDER_COL);
-//                    boolean read = (Boolean)model.getValueAt(i, READ_COL);
-//                    boolean write = (Boolean)model.getValueAt(i, WRITE_COL);
-//                    // TODO: This should be removed once server-side transactions are implemented
-//                    if (write && !read) {
-//                        throw new LockerSimpleException("Must have read permission to have write permission on a folder.");
-//                    }
-//                    FolderPermission fp = new FolderPermission(user, folder, read, write);
-//                    folder.updatePermissionsOnServer(fp);
-//                }
-//            }
+            this.user.deletePermissionsFromServer();
+            
+            if (user.isAdmin()) {
+                Folder[] folders = Folder.getAllFromServer();
+                for (Folder folder : folders) {
+                    folder.encryptForUser(user);
+                }
+            } else {
+                final int FOLDER_COL = 0;
+                final int READ_COL = 1;
+                final int WRITE_COL = 2;
+                publish("Setting permissions...");
+                DefaultTableModel model = (DefaultTableModel) tblPermissions.getModel();
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Folder folder = (Folder)model.getValueAt(i, FOLDER_COL);
+                    boolean read = (Boolean)model.getValueAt(i, READ_COL);
+                    boolean write = (Boolean)model.getValueAt(i, WRITE_COL);
+                    // TODO: This should be removed once server-side transactions are implemented
+                    if (write && !read) {
+                        throw new LockerSimpleException("Must have read permission to have write permission on a folder.");
+                    }
+                    FolderPermission fp = new FolderPermission(user, folder, read, write);
+                    folder.updatePermissionsOnServer(fp);
+                }
+            }
             
             return null;
         }
